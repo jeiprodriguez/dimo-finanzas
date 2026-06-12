@@ -544,7 +544,16 @@ function saveDiario() {
   const desc = document.getElementById('gd-desc').value.trim();
   const monto = parseFloat(document.getElementById('gd-monto').value) || 0;
   if (!desc || !monto) return;
-  getArr('diarios').push({id:Date.now(), desc, cat: document.getElementById('gd-cat').value, monto, origen: document.getElementById('gd-origen').value, fecha: document.getElementById('gd-fecha').value});
+  const origen = document.getElementById('gd-origen').value;
+  const fecha = document.getElementById('gd-fecha').value;
+
+  if (origen === 'Caja fuerte' && state.caja.length > 0) {
+    state.caja[0].monto = Math.max(0, state.caja[0].monto - monto);
+  } else if (origen === 'Cuenta bancaria' && state.bancos.length > 0) {
+    state.bancos[0].saldo = Math.max(0, state.bancos[0].saldo - monto);
+  }
+
+  getArr('diarios').push({id:Date.now(), desc, cat: document.getElementById('gd-cat').value, monto, origen, fecha});
   save(); closeModal('diario'); clearInputs('gd-desc','gd-monto'); renderAll();
 }
 
@@ -567,6 +576,19 @@ function saveCaja() {
 function deleteItem(type, id) {
   if (type === 'bancos') { state.bancos = state.bancos.filter(i=>i.id!==id); }
   else if (type === 'caja') { state.caja = state.caja.filter(i=>i.id!==id); }
+  else if (type === 'diarios') {
+    const arr = getArr('diarios');
+    const item = arr.find(i=>i.id===id);
+    if (item) {
+      if (item.origen === 'Caja fuerte' && state.caja.length > 0) {
+        state.caja[0].monto += item.monto;
+      } else if (item.origen === 'Cuenta bancaria' && state.bancos.length > 0) {
+        state.bancos[0].saldo += item.monto;
+      }
+    }
+    const idx = arr.findIndex(i=>i.id===id);
+    if(idx>-1) arr.splice(idx,1);
+  }
   else { const arr = getArr(type); const idx = arr.findIndex(i=>i.id===id); if(idx>-1) arr.splice(idx,1); }
   save(); renderAll();
 }
