@@ -282,7 +282,7 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
   <div class="section">
     <div class="sec-head"><div class="sec-title">Registro diario</div><button class="btn-add" onclick="openModal('diario')">+ Agregar</button></div>
     <table class="tbl">
-      <thead><tr><th>Descripción</th><th>Categoría</th><th>Monto (COP)</th><th>Fecha</th><th></th></tr></thead>
+      <thead><tr><th>Descripción</th><th>Categoría</th><th>Monto (COP)</th><th>Sale de</th><th>Fecha</th><th></th></tr></thead>
       <tbody id="tbl-diarios"><tr><td colspan="5" class="empty">Sin gastos registrados</td></tr></tbody>
     </table>
   </div>
@@ -386,6 +386,12 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
       </select>
     </div>
     <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="gd-monto" type="number" placeholder="Ej: 35000"></div>
+    <div class="form-group"><label class="form-label">Sale de</label>
+      <select class="form-select" id="gd-origen">
+        <option value="Caja fuerte">🔒 Caja fuerte</option>
+        <option value="Cuenta bancaria">🏦 Cuenta bancaria</option>
+      </select>
+    </div>
     <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="gd-fecha" type="date"></div>
     <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('diario')">Cancelar</button><button class="btn-primary" onclick="saveDiario()">Guardar</button></div>
   </div>
@@ -538,7 +544,7 @@ function saveDiario() {
   const desc = document.getElementById('gd-desc').value.trim();
   const monto = parseFloat(document.getElementById('gd-monto').value) || 0;
   if (!desc || !monto) return;
-  getArr('diarios').push({id:Date.now(), desc, cat: document.getElementById('gd-cat').value, monto, fecha: document.getElementById('gd-fecha').value});
+  getArr('diarios').push({id:Date.now(), desc, cat: document.getElementById('gd-cat').value, monto, origen: document.getElementById('gd-origen').value, fecha: document.getElementById('gd-fecha').value});
   save(); closeModal('diario'); clearInputs('gd-desc','gd-monto'); renderAll();
 }
 
@@ -612,11 +618,12 @@ function renderEquipo() {
 function renderDiarios() {
   const arr = getArr('diarios');
   const tb = document.getElementById('tbl-diarios');
-  if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">Sin gastos registrados</td></tr>'; return; }
+  if (!arr.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">Sin gastos registrados</td></tr>'; return; }
   tb.innerHTML = arr.map(d => `<tr>
     <td><strong>${d.desc}</strong></td>
     <td><span class="pill muted">${d.cat}</span></td>
     <td class="amt red">${fmt(d.monto)}</td>
+    <td><span class="pill ${d.origen==='Caja fuerte'?'yellow':'blue'}">${d.origen==='Caja fuerte'?'🔒 Caja':'🏦 Banco'}</span></td>
     <td style="color:var(--muted)">${d.fecha||'—'}</td>
     <td><button class="btn-del" onclick="deleteItem('diarios',${d.id})">✕</button></td>
   </tr>`).join('');
