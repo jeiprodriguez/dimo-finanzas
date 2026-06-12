@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dimo — Finanzas</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Syne:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --black:#0a0a0a;--black2:#111;--black3:#181818;--card:#141414;
+  --border:#242424;--border2:#1e1e1e;
+  --yellow:#f5c842;--ydim:rgba(245,200,66,0.10);--ydim2:rgba(245,200,66,0.06);
+  --white:#f0ede8;--muted:#666;--muted2:#3a3a3a;
+  --green:#3ddc84;--gdim:rgba(61,220,132,0.10);
+  --red:#ff5c5c;--rdim:rgba(255,92,92,0.10);
+  --blue:#4a9eff;--bdim:rgba(74,158,255,0.10);
+  --purple:#a78bfa;--pdim:rgba(167,139,250,0.10);
+  --orange:#fb923c;--odim:rgba(251,146,60,0.10);
+}
+body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;font-size:14px;min-height:100vh}
+
+/* LOGIN */
+#login-screen{position:fixed;inset:0;background:var(--black);z-index:999;display:flex;align-items:center;justify-content:center}
+#login-screen.hidden{display:none}
+.login-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:40px 36px;width:360px;max-width:92vw;text-align:center}
+.login-logo{font-family:'Cormorant Garamond',serif;font-size:36px;font-weight:600;margin-bottom:4px}
+.login-logo span{color:var(--yellow)}
+.login-sub{font-size:11px;color:var(--muted);margin-bottom:32px;letter-spacing:.06em;text-transform:uppercase}
+.login-label{display:block;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px;text-align:left}
+.login-input{width:100%;background:var(--black3);border:1px solid var(--border);border-radius:8px;padding:12px 14px;color:var(--white);font-family:'Syne',sans-serif;font-size:14px;outline:none;transition:border-color .15s;margin-bottom:8px;letter-spacing:.1em}
+.login-input:focus{border-color:var(--yellow)}
+.login-btn{width:100%;background:var(--yellow);color:var(--black);border:none;border-radius:8px;padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.04em;margin-top:8px;transition:opacity .15s}
+.login-btn:hover{opacity:.85}
+.login-error{font-size:11px;color:var(--red);margin-top:8px;min-height:16px;transition:opacity .2s}
+
+/* TOPBAR */
+.topbar{background:var(--black2);border-bottom:1px solid var(--border);padding:0 28px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;letter-spacing:.04em}
+.logo span{color:var(--yellow)}
+.nav{display:flex;gap:3px}
+.nav-tab{padding:5px 12px;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid transparent;color:var(--muted);transition:all .15s;letter-spacing:.03em;white-space:nowrap}
+.nav-tab:hover{color:var(--white);background:var(--black3)}
+.nav-tab.active{color:var(--yellow);background:var(--ydim2);border-color:rgba(245,200,66,.2)}
+.month-sel{background:var(--card);border:1px solid var(--border);border-radius:6px;padding:6px 10px;color:var(--white);font-family:'Syne',sans-serif;font-size:11px;font-weight:600;cursor:pointer;outline:none}
+
+/* PAGES */
+.page{display:none;padding:24px 28px}
+.page.active{display:block}
+
+/* PAGE HEADER */
+.ph{margin-bottom:20px}
+.ph-title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:500;line-height:1.1}
+.ph-sub{font-size:11px;color:var(--muted);margin-top:3px}
+
+/* KPI GRID */
+.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;position:relative;overflow:hidden}
+.kpi.hl{border-color:rgba(245,200,66,.25);background:var(--ydim2)}
+.kpi-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.kpi-val{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;line-height:1}
+.kpi-val.green{color:var(--green)}
+.kpi-val.red{color:var(--red)}
+.kpi-val.yellow{color:var(--yellow)}
+.kpi-val.blue{color:var(--blue)}
+.kpi-val.purple{color:var(--purple)}
+.kpi-val.orange{color:var(--orange)}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:4px}
+.kpi-bar{position:absolute;bottom:0;left:0;right:0;height:2px;background:var(--border)}
+.kpi-bar-fill{height:100%;border-radius:100px;transition:width .8s ease}
+
+/* UTILIDAD CARD */
+.util-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:20px 24px;display:flex;align-items:center;gap:0;margin-bottom:24px;flex-wrap:wrap}
+.util-item{text-align:center;flex:1;min-width:100px}
+.util-label{font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.util-val{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600}
+.util-div{color:var(--muted2);font-size:18px;padding:0 8px;flex-shrink:0}
+.util-result{background:var(--ydim);border:1px solid rgba(245,200,66,.2);border-radius:8px;padding:12px 20px;text-align:center;min-width:140px}
+.util-result .util-label{color:var(--yellow)}
+.util-result .util-val{font-size:30px}
+
+/* DINERO SECTION */
+.dinero-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px}
+.dinero-card{background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.dinero-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.dinero-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.dinero-total{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--yellow)}
+.dinero-item{padding:11px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between}
+.dinero-item:last-child{border-bottom:none}
+.dinero-name{font-size:12px;font-weight:500}
+.dinero-amount{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600;color:var(--blue)}
+.dinero-empty{padding:20px 18px;font-size:12px;color:var(--muted);text-align:center}
+
+/* SECTION */
+.section{margin-bottom:24px}
+.sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.sec-title{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* BTN ADD */
+.btn-add{display:flex;align-items:center;gap:5px;background:var(--ydim);border:1px solid rgba(245,200,66,.2);border-radius:6px;padding:5px 12px;color:var(--yellow);font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:all .15s}
+.btn-add:hover{background:rgba(245,200,66,.16)}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.tbl th{padding:9px 14px;text-align:left;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--black3);border-bottom:1px solid var(--border)}
+.tbl td{padding:10px 14px;font-size:12px;border-bottom:1px solid var(--border2);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--black3)}
+.tbl td.amt{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:600}
+.tbl td.amt.green{color:var(--green)}
+.tbl td.amt.red{color:var(--red)}
+.tbl td.amt.blue{color:var(--blue)}
+.tbl td.amt.yellow{color:var(--yellow)}
+.tbl td.empty{color:var(--muted);text-align:center;padding:24px}
+
+/* PILL */
+.pill{display:inline-flex;align-items:center;padding:2px 8px;border-radius:100px;font-size:9px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.pill.green{background:var(--gdim);color:var(--green)}
+.pill.red{background:var(--rdim);color:var(--red)}
+.pill.blue{background:var(--bdim);color:var(--blue)}
+.pill.yellow{background:var(--ydim);color:var(--yellow)}
+.pill.purple{background:var(--pdim);color:var(--purple)}
+.pill.muted{background:var(--black3);color:var(--muted)}
+
+/* DELETE BTN */
+.btn-del{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;transition:all .15s}
+.btn-del:hover{background:var(--rdim);color:var(--red)}
+
+/* MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal{background:var(--black2);border:1px solid var(--border);border-radius:10px;padding:26px;width:400px;max-width:94vw}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;margin-bottom:18px}
+.form-group{margin-bottom:12px}
+.form-label{display:block;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.form-input,.form-select{width:100%;background:var(--black3);border:1px solid var(--border);border-radius:6px;padding:8px 12px;color:var(--white);font-family:'Syne',sans-serif;font-size:12px;outline:none;transition:border-color .15s}
+.form-input:focus,.form-select:focus{border-color:var(--yellow)}
+.form-select option{background:var(--black2)}
+.modal-actions{display:flex;gap:10px;margin-top:18px}
+.btn-primary{flex:1;background:var(--yellow);color:var(--black);border:none;border-radius:6px;padding:9px;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.04em;transition:opacity .15s}
+.btn-primary:hover{opacity:.85}
+.btn-secondary{padding:9px 16px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-family:'Syne',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-secondary:hover{border-color:var(--muted);color:var(--white)}
+
+/* SAVED TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:var(--black);padding:10px 18px;border-radius:8px;font-size:12px;font-weight:700;z-index:300;opacity:0;transform:translateY(8px);transition:all .3s;pointer-events:none}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media(max-width:900px){
+  .kpi-grid{grid-template-columns:repeat(3,1fr)}
+  .dinero-grid{grid-template-columns:1fr}
+  .nav-tab{font-size:10px;padding:4px 8px}
+  .page{padding:16px}
+  .topbar{padding:0 16px}
+  .util-card{gap:8px}
+}
+@media(max-width:600px){
+  .kpi-grid{grid-template-columns:repeat(2,1fr)}
+  .nav{gap:2px}
+}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">Di<span>mo</span></div>
+    <div class="login-sub">Finanzas · acceso privado</div>
+    <label class="login-label">Contraseña</label>
+    <input class="login-input" id="pwd-input" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPwd()">
+    <div class="login-error" id="pwd-error"></div>
+    <button class="login-btn" onclick="checkPwd()">Entrar</button>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="logo">Di<span>mo</span></div>
+  <nav class="nav">
+    <div class="nav-tab active" onclick="showPage('resumen',this)">Resumen</div>
+    <div class="nav-tab" onclick="showPage('ingresos',this)">Ingresos</div>
+    <div class="nav-tab" onclick="showPage('gastos',this)">Gastos fijos</div>
+    <div class="nav-tab" onclick="showPage('equipo',this)">Equipo</div>
+    <div class="nav-tab" onclick="showPage('diarios',this)">Diarios</div>
+    <div class="nav-tab" onclick="showPage('dinero',this)">Dinero</div>
+  </nav>
+  <select class="month-sel" id="monthSel" onchange="changeMonth()">
+    <option value="2026-01">Enero 2026</option>
+    <option value="2026-02">Febrero 2026</option>
+    <option value="2026-03">Marzo 2026</option>
+    <option value="2026-04">Abril 2026</option>
+    <option value="2026-05">Mayo 2026</option>
+    <option value="2026-06" selected>Junio 2026</option>
+    <option value="2026-07">Julio 2026</option>
+    <option value="2026-08">Agosto 2026</option>
+    <option value="2026-09">Septiembre 2026</option>
+    <option value="2026-10">Octubre 2026</option>
+    <option value="2026-11">Noviembre 2026</option>
+    <option value="2026-12">Diciembre 2026</option>
+  </select>
+</header>
+
+<!-- RESUMEN -->
+<div class="page active" id="page-resumen">
+  <div class="ph">
+    <div class="ph-title">Resumen financiero</div>
+    <div class="ph-sub" id="res-sub">Junio 2026 · visión general del mes</div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi"><div class="kpi-label">Ingresos</div><div class="kpi-val green" id="k-ing">$0</div><div class="kpi-sub" id="k-ing-sub">0 clientes</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-ing" style="width:0%;background:var(--green)"></div></div></div>
+    <div class="kpi"><div class="kpi-label">Gastos fijos</div><div class="kpi-val red" id="k-gf">$0</div><div class="kpi-sub" id="k-gf-sub">0 conceptos</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-gf" style="width:0%;background:var(--red)"></div></div></div>
+    <div class="kpi"><div class="kpi-label">Pagos equipo</div><div class="kpi-val red" id="k-eq">$0</div><div class="kpi-sub" id="k-eq-sub">0 personas</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-eq" style="width:0%;background:var(--red)"></div></div></div>
+    <div class="kpi"><div class="kpi-label">Gastos diarios</div><div class="kpi-val red" id="k-gd">$0</div><div class="kpi-sub" id="k-gd-sub">0 registros</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-gd" style="width:0%;background:var(--red)"></div></div></div>
+    <div class="kpi hl"><div class="kpi-label">Utilidad neta</div><div class="kpi-val yellow" id="k-ut">$0</div><div class="kpi-sub" id="k-margen">Margen 0%</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-ut" style="width:0%;background:var(--yellow)"></div></div></div>
+    <div class="kpi"><div class="kpi-label">Total en caja</div><div class="kpi-val blue" id="k-caja">$0</div><div class="kpi-sub">Bancos + efectivo</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-caja" style="width:0%;background:var(--blue)"></div></div></div>
+  </div>
+
+  <div class="util-card">
+    <div class="util-item"><div class="util-label">Ingresos</div><div class="util-val green" id="u-ing">$0</div></div>
+    <div class="util-div">−</div>
+    <div class="util-item"><div class="util-label">Gastos fijos</div><div class="util-val red" id="u-gf">$0</div></div>
+    <div class="util-div">−</div>
+    <div class="util-item"><div class="util-label">Equipo</div><div class="util-val red" id="u-eq">$0</div></div>
+    <div class="util-div">−</div>
+    <div class="util-item"><div class="util-label">Diarios</div><div class="util-val red" id="u-gd">$0</div></div>
+    <div class="util-div">=</div>
+    <div class="util-result">
+      <div class="util-label">Utilidad neta</div>
+      <div class="util-val yellow" id="u-ut">$0</div>
+      <div style="font-size:10px;color:var(--yellow);margin-top:3px" id="u-margen">Margen 0%</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Clientes activos este mes</div></div>
+    <table class="tbl">
+      <thead><tr><th>Cliente</th><th>Plan</th><th>Ingreso</th><th>Estado</th></tr></thead>
+      <tbody id="res-clientes"><tr><td colspan="4" class="empty">Agrega ingresos para ver el resumen</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- INGRESOS -->
+<div class="page" id="page-ingresos">
+  <div class="ph"><div class="ph-title">Ingresos</div><div class="ph-sub" id="ing-sub">Junio 2026 · mensualidades por cliente</div></div>
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Facturación del mes</div><button class="btn-add" onclick="openModal('ingreso')">+ Agregar</button></div>
+    <table class="tbl">
+      <thead><tr><th>Cliente</th><th>Plan</th><th>Monto (COP)</th><th>Estado</th><th>Fecha</th><th></th></tr></thead>
+      <tbody id="tbl-ingresos"><tr><td colspan="6" class="empty">Sin ingresos registrados</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- GASTOS FIJOS -->
+<div class="page" id="page-gastos">
+  <div class="ph"><div class="ph-title">Gastos fijos</div><div class="ph-sub">Apps, servicios y operación mensual</div></div>
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Gastos del mes</div><button class="btn-add" onclick="openModal('gasto')">+ Agregar</button></div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Categoría</th><th>Monto (COP)</th><th>Recurrente</th><th></th></tr></thead>
+      <tbody id="tbl-gastos"><tr><td colspan="5" class="empty">Sin gastos registrados</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- EQUIPO -->
+<div class="page" id="page-equipo">
+  <div class="ph"><div class="ph-title">Pagos al equipo</div><div class="ph-sub" id="eq-sub">Junio 2026 · honorarios y nómina</div></div>
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Pagos del mes</div><button class="btn-add" onclick="openModal('equipo')">+ Agregar</button></div>
+    <table class="tbl">
+      <thead><tr><th>Persona</th><th>Rol</th><th>Monto (COP)</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="tbl-equipo"><tr><td colspan="5" class="empty">Sin pagos registrados</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- GASTOS DIARIOS -->
+<div class="page" id="page-diarios">
+  <div class="ph"><div class="ph-title">Gastos diarios</div><div class="ph-sub" id="gd-sub">Junio 2026 · lo que sale día a día</div></div>
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Registro diario</div><button class="btn-add" onclick="openModal('diario')">+ Agregar</button></div>
+    <table class="tbl">
+      <thead><tr><th>Descripción</th><th>Categoría</th><th>Monto (COP)</th><th>Fecha</th><th></th></tr></thead>
+      <tbody id="tbl-diarios"><tr><td colspan="5" class="empty">Sin gastos registrados</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DINERO -->
+<div class="page" id="page-dinero">
+  <div class="ph"><div class="ph-title">Dónde está el dinero</div><div class="ph-sub">Cuentas bancarias y caja fuerte · se actualiza siempre</div></div>
+  <div class="dinero-grid">
+    <div class="dinero-card">
+      <div class="dinero-head">
+        <div class="dinero-title">🏦 Cuentas bancarias</div>
+        <div class="dinero-total" id="total-bancos">$0</div>
+      </div>
+      <div id="lista-bancos"><div class="dinero-empty">Sin cuentas registradas</div></div>
+      <div style="padding:12px 18px;border-top:1px solid var(--border2)"><button class="btn-add" style="width:100%;justify-content:center" onclick="openModal('banco')">+ Agregar cuenta</button></div>
+    </div>
+    <div class="dinero-card">
+      <div class="dinero-head">
+        <div class="dinero-title">🔒 Caja fuerte</div>
+        <div class="dinero-total" id="total-caja">$0</div>
+      </div>
+      <div id="lista-caja"><div class="dinero-empty">Sin registros</div></div>
+      <div style="padding:12px 18px;border-top:1px solid var(--border2)"><button class="btn-add" style="width:100%;justify-content:center" onclick="openModal('caja')">+ Agregar efectivo</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODALES -->
+<div class="modal-overlay" id="modal-ingreso">
+  <div class="modal">
+    <div class="modal-title">Nuevo ingreso</div>
+    <div class="form-group"><label class="form-label">Cliente</label><input class="form-input" id="in-cliente" placeholder="Ej: Límitrofe"></div>
+    <div class="form-group"><label class="form-label">Plan</label>
+      <select class="form-select" id="in-plan">
+        <option value="Plan #1">Plan #1 — Admin + contenido</option>
+        <option value="Plan #2">Plan #2 — Admin + contenido + pauta</option>
+        <option value="Plan #3">Plan #3 — Solo contenido</option>
+        <option value="Otro">Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="in-monto" type="number" placeholder="Ej: 2000000"></div>
+    <div class="form-group"><label class="form-label">Estado</label>
+      <select class="form-select" id="in-estado">
+        <option value="pagado">Pagado</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="parcial">Pago parcial</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="in-fecha" type="date"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('ingreso')">Cancelar</button><button class="btn-primary" onclick="saveIngreso()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-gasto">
+  <div class="modal">
+    <div class="modal-title">Nuevo gasto fijo</div>
+    <div class="form-group"><label class="form-label">Concepto</label><input class="form-input" id="gf-concepto" placeholder="Ej: Adobe Creative Cloud"></div>
+    <div class="form-group"><label class="form-label">Categoría</label>
+      <select class="form-select" id="gf-cat">
+        <option>Software / Apps</option><option>Arriendo / Espacio</option>
+        <option>Servicios públicos</option><option>Transporte</option>
+        <option>Marketing / Ads</option><option>Equipo / Hardware</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="gf-monto" type="number" placeholder="Ej: 80000"></div>
+    <div class="form-group"><label class="form-label">¿Recurrente?</label>
+      <select class="form-select" id="gf-rec"><option value="Sí">Sí, mensual</option><option value="No">No, puntual</option></select>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('gasto')">Cancelar</button><button class="btn-primary" onclick="saveGasto()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-equipo">
+  <div class="modal">
+    <div class="modal-title">Pago al equipo</div>
+    <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="eq-nombre" placeholder="Ej: Ashley"></div>
+    <div class="form-group"><label class="form-label">Rol</label>
+      <select class="form-select" id="eq-rol">
+        <option>Community Manager</option><option>Diseño</option>
+        <option>Editor de video</option><option>Director creativo</option>
+        <option>Admin</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="eq-monto" type="number" placeholder="Ej: 1500000"></div>
+    <div class="form-group"><label class="form-label">Estado</label>
+      <select class="form-select" id="eq-estado"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('equipo')">Cancelar</button><button class="btn-primary" onclick="saveEquipo()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-diario">
+  <div class="modal">
+    <div class="modal-title">Gasto diario</div>
+    <div class="form-group"><label class="form-label">Descripción</label><input class="form-input" id="gd-desc" placeholder="Ej: Almuerzo reunión cliente"></div>
+    <div class="form-group"><label class="form-label">Categoría</label>
+      <select class="form-select" id="gd-cat">
+        <option>Alimentación</option><option>Transporte</option><option>Papelería</option>
+        <option>Imprevistos</option><option>Entretenimiento</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="gd-monto" type="number" placeholder="Ej: 35000"></div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="gd-fecha" type="date"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('diario')">Cancelar</button><button class="btn-primary" onclick="saveDiario()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-banco">
+  <div class="modal">
+    <div class="modal-title">Cuenta bancaria</div>
+    <div class="form-group"><label class="form-label">Banco / Cuenta</label><input class="form-input" id="ba-nombre" placeholder="Ej: Bancolombia ahorros"></div>
+    <div class="form-group"><label class="form-label">Saldo actual (COP)</label><input class="form-input" id="ba-saldo" type="number" placeholder="Ej: 5000000"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('banco')">Cancelar</button><button class="btn-primary" onclick="saveBanco()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-caja">
+  <div class="modal">
+    <div class="modal-title">Caja fuerte</div>
+    <div class="form-group"><label class="form-label">Descripción</label><input class="form-input" id="ca-desc" placeholder="Ej: Efectivo COP"></div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="ca-monto" type="number" placeholder="Ej: 500000"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('caja')">Cancelar</button><button class="btn-primary" onclick="saveCaja()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Guardado</div>
+
+<script>
+const PWD = 'dimo2026';
+const SESSION_KEY = 'dimo_auth';
+
+function checkPwd() {
+  const input = document.getElementById('pwd-input').value;
+  if (input === PWD) {
+    sessionStorage.setItem(SESSION_KEY, '1');
+    document.getElementById('login-screen').classList.add('hidden');
+    renderAll();
+  } else {
+    const err = document.getElementById('pwd-error');
+    err.textContent = 'Contraseña incorrecta';
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+    setTimeout(() => err.textContent = '', 2500);
+  }
+}
+
+// Check if already authenticated
+if (sessionStorage.getItem(SESSION_KEY) === '1') {
+  document.getElementById('login-screen').classList.add('hidden');
+}
+
+const KEY = 'dimo_finanzas_v2';
+let state = {
+  mes: '2026-06',
+  ingresos: {},
+  gastos: {},
+  equipo: {},
+  diarios: {},
+  bancos: [],
+  caja: []
+};
+
+// Load from localStorage
+try {
+  const saved = localStorage.getItem(KEY);
+  if (saved) state = JSON.parse(saved);
+} catch(e) {}
+
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e) {}
+  showToast();
+}
+
+function showToast() {
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+const fmt = n => new Intl.NumberFormat('es-CO', {style:'currency',currency:'COP',maximumFractionDigits:0}).format(n || 0);
+const fmtShort = n => {
+  const abs = Math.abs(n || 0);
+  if (abs >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (abs >= 1000) return (n/1000).toFixed(0) + 'k';
+  return fmt(n);
+};
+
+function getMes() { return state.mes; }
+function getArr(type) {
+  const m = getMes();
+  if (type === 'bancos') return state.bancos || [];
+  if (type === 'caja') return state.caja || [];
+  if (!state[type]) state[type] = {};
+  if (!state[type][m]) state[type][m] = [];
+  return state[type][m];
+}
+
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+function changeMonth() {
+  state.mes = document.getElementById('monthSel').value;
+  const months = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  const [y, m] = state.mes.split('-');
+  const label = months[parseInt(m)-1] + ' ' + y;
+  document.getElementById('res-sub').textContent = label + ' · visión general del mes';
+  document.getElementById('ing-sub').textContent = label + ' · mensualidades por cliente';
+  document.getElementById('eq-sub').textContent = label + ' · honorarios y nómina';
+  document.getElementById('gd-sub').textContent = label + ' · lo que sale día a día';
+  renderAll();
+}
+
+function openModal(type) {
+  document.getElementById('modal-'+type).classList.add('open');
+  if (type === 'ingreso') document.getElementById('in-fecha').valueAsDate = new Date();
+  if (type === 'diario') document.getElementById('gd-fecha').valueAsDate = new Date();
+}
+function closeModal(type) { document.getElementById('modal-'+type).classList.remove('open'); }
+document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
+
+function clearInputs(...ids) { ids.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); }
+
+function saveIngreso() {
+  const cliente = document.getElementById('in-cliente').value.trim();
+  const monto = parseFloat(document.getElementById('in-monto').value) || 0;
+  if (!cliente || !monto) return;
+  getArr('ingresos').push({id:Date.now(), cliente, plan: document.getElementById('in-plan').value, monto, estado: document.getElementById('in-estado').value, fecha: document.getElementById('in-fecha').value});
+  save(); closeModal('ingreso'); clearInputs('in-cliente','in-monto'); renderAll();
+}
+
+function saveGasto() {
+  const concepto = document.getElementById('gf-concepto').value.trim();
+  const monto = parseFloat(document.getElementById('gf-monto').value) || 0;
+  if (!concepto || !monto) return;
+  getArr('gastos').push({id:Date.now(), concepto, cat: document.getElementById('gf-cat').value, monto, rec: document.getElementById('gf-rec').value});
+  save(); closeModal('gasto'); clearInputs('gf-concepto','gf-monto'); renderAll();
+}
+
+function saveEquipo() {
+  const nombre = document.getElementById('eq-nombre').value.trim();
+  const monto = parseFloat(document.getElementById('eq-monto').value) || 0;
+  if (!nombre || !monto) return;
+  getArr('equipo').push({id:Date.now(), nombre, rol: document.getElementById('eq-rol').value, monto, estado: document.getElementById('eq-estado').value});
+  save(); closeModal('equipo'); clearInputs('eq-nombre','eq-monto'); renderAll();
+}
+
+function saveDiario() {
+  const desc = document.getElementById('gd-desc').value.trim();
+  const monto = parseFloat(document.getElementById('gd-monto').value) || 0;
+  if (!desc || !monto) return;
+  getArr('diarios').push({id:Date.now(), desc, cat: document.getElementById('gd-cat').value, monto, fecha: document.getElementById('gd-fecha').value});
+  save(); closeModal('diario'); clearInputs('gd-desc','gd-monto'); renderAll();
+}
+
+function saveBanco() {
+  const nombre = document.getElementById('ba-nombre').value.trim();
+  const saldo = parseFloat(document.getElementById('ba-saldo').value) || 0;
+  if (!nombre) return;
+  state.bancos.push({id:Date.now(), nombre, saldo});
+  save(); closeModal('banco'); clearInputs('ba-nombre','ba-saldo'); renderAll();
+}
+
+function saveCaja() {
+  const desc = document.getElementById('ca-desc').value.trim();
+  const monto = parseFloat(document.getElementById('ca-monto').value) || 0;
+  if (!desc) return;
+  state.caja.push({id:Date.now(), desc, monto});
+  save(); closeModal('caja'); clearInputs('ca-desc','ca-monto'); renderAll();
+}
+
+function deleteItem(type, id) {
+  if (type === 'bancos') { state.bancos = state.bancos.filter(i=>i.id!==id); }
+  else if (type === 'caja') { state.caja = state.caja.filter(i=>i.id!==id); }
+  else { const arr = getArr(type); const idx = arr.findIndex(i=>i.id===id); if(idx>-1) arr.splice(idx,1); }
+  save(); renderAll();
+}
+
+function renderAll() {
+  renderIngresos(); renderGastos(); renderEquipo(); renderDiarios(); renderDinero(); recalcular();
+}
+
+function renderIngresos() {
+  const arr = getArr('ingresos');
+  const tb = document.getElementById('tbl-ingresos');
+  if (!arr.length) { tb.innerHTML = '<tr><td colspan="6" class="empty">Sin ingresos registrados</td></tr>'; return; }
+  tb.innerHTML = arr.map(i => `<tr>
+    <td><strong>${i.cliente}</strong></td>
+    <td><span class="pill blue">${i.plan}</span></td>
+    <td class="amt green">${fmt(i.monto)}</td>
+    <td><span class="pill ${i.estado==='pagado'?'green':i.estado==='pendiente'?'red':'yellow'}">${i.estado}</span></td>
+    <td style="color:var(--muted)">${i.fecha||'—'}</td>
+    <td><button class="btn-del" onclick="deleteItem('ingresos',${i.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+function renderGastos() {
+  const arr = getArr('gastos');
+  const tb = document.getElementById('tbl-gastos');
+  if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">Sin gastos registrados</td></tr>'; return; }
+  tb.innerHTML = arr.map(g => `<tr>
+    <td><strong>${g.concepto}</strong></td>
+    <td><span class="pill muted">${g.cat}</span></td>
+    <td class="amt red">${fmt(g.monto)}</td>
+    <td style="color:var(--muted)">${g.rec}</td>
+    <td><button class="btn-del" onclick="deleteItem('gastos',${g.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+function renderEquipo() {
+  const arr = getArr('equipo');
+  const tb = document.getElementById('tbl-equipo');
+  if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">Sin pagos registrados</td></tr>'; return; }
+  tb.innerHTML = arr.map(e => `<tr>
+    <td><strong>${e.nombre}</strong></td>
+    <td><span class="pill purple">${e.rol}</span></td>
+    <td class="amt red">${fmt(e.monto)}</td>
+    <td><span class="pill ${e.estado==='pagado'?'green':'red'}">${e.estado}</span></td>
+    <td><button class="btn-del" onclick="deleteItem('equipo',${e.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+function renderDiarios() {
+  const arr = getArr('diarios');
+  const tb = document.getElementById('tbl-diarios');
+  if (!arr.length) { tb.innerHTML = '<tr><td colspan="5" class="empty">Sin gastos registrados</td></tr>'; return; }
+  tb.innerHTML = arr.map(d => `<tr>
+    <td><strong>${d.desc}</strong></td>
+    <td><span class="pill muted">${d.cat}</span></td>
+    <td class="amt red">${fmt(d.monto)}</td>
+    <td style="color:var(--muted)">${d.fecha||'—'}</td>
+    <td><button class="btn-del" onclick="deleteItem('diarios',${d.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+function renderDinero() {
+  const bancos = getArr('bancos');
+  const caja = getArr('caja');
+  const totalB = bancos.reduce((s,b)=>s+b.saldo,0);
+  const totalC = caja.reduce((s,c)=>s+c.monto,0);
+  document.getElementById('total-bancos').textContent = fmt(totalB);
+  document.getElementById('total-caja').textContent = fmt(totalC);
+  const lb = document.getElementById('lista-bancos');
+  lb.innerHTML = bancos.length ? bancos.map(b=>`<div class="dinero-item"><span class="dinero-name">${b.nombre}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(b.saldo)}</span><button class="btn-del" onclick="deleteItem('bancos',${b.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin cuentas registradas</div>';
+  const lc = document.getElementById('lista-caja');
+  lc.innerHTML = caja.length ? caja.map(c=>`<div class="dinero-item"><span class="dinero-name">${c.desc}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(c.monto)}</span><button class="btn-del" onclick="deleteItem('caja',${c.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin registros</div>';
+}
+
+function recalcular() {
+  const ing = getArr('ingresos').reduce((s,i)=>s+i.monto,0);
+  const gf = getArr('gastos').reduce((s,g)=>s+g.monto,0);
+  const eq = getArr('equipo').reduce((s,e)=>s+e.monto,0);
+  const gd = getArr('diarios').reduce((s,d)=>s+d.monto,0);
+  const ut = ing - gf - eq - gd;
+  const margen = ing > 0 ? Math.round((ut/ing)*100) : 0;
+  const bancos = getArr('bancos').reduce((s,b)=>s+b.saldo,0);
+  const caja = getArr('caja').reduce((s,c)=>s+c.monto,0);
+  const totalCaja = bancos + caja;
+
+  document.getElementById('k-ing').textContent = fmtShort(ing);
+  document.getElementById('k-ing-sub').textContent = getArr('ingresos').length + ' clientes';
+  document.getElementById('k-gf').textContent = fmtShort(gf);
+  document.getElementById('k-gf-sub').textContent = getArr('gastos').length + ' conceptos';
+  document.getElementById('k-eq').textContent = fmtShort(eq);
+  document.getElementById('k-eq-sub').textContent = getArr('equipo').length + ' personas';
+  document.getElementById('k-gd').textContent = fmtShort(gd);
+  document.getElementById('k-gd-sub').textContent = getArr('diarios').length + ' registros';
+  document.getElementById('k-ut').textContent = fmtShort(ut);
+  document.getElementById('k-ut').className = 'kpi-val ' + (ut >= 0 ? 'yellow' : 'red');
+  document.getElementById('k-margen').textContent = 'Margen ' + margen + '%';
+  document.getElementById('k-caja').textContent = fmtShort(totalCaja);
+
+  document.getElementById('u-ing').textContent = fmt(ing);
+  document.getElementById('u-gf').textContent = fmt(gf);
+  document.getElementById('u-eq').textContent = fmt(eq);
+  document.getElementById('u-gd').textContent = fmt(gd);
+  document.getElementById('u-ut').textContent = fmt(ut);
+  document.getElementById('u-ut').style.color = ut >= 0 ? 'var(--yellow)' : 'var(--red)';
+  document.getElementById('u-margen').textContent = 'Margen ' + margen + '%';
+
+  if (ing > 0) {
+    document.getElementById('b-ing').style.width = '100%';
+    document.getElementById('b-gf').style.width = Math.min(100,(gf/ing)*100)+'%';
+    document.getElementById('b-eq').style.width = Math.min(100,(eq/ing)*100)+'%';
+    document.getElementById('b-gd').style.width = Math.min(100,(gd/ing)*100)+'%';
+    document.getElementById('b-ut').style.width = Math.max(0,Math.min(100,margen))+'%';
+  }
+  if (totalCaja > 0) document.getElementById('b-caja').style.width = '100%';
+
+  // Resumen clientes
+  const tb = document.getElementById('res-clientes');
+  const arr = getArr('ingresos');
+  if (!arr.length) { tb.innerHTML = '<tr><td colspan="4" class="empty">Agrega ingresos para ver el resumen</td></tr>'; return; }
+  tb.innerHTML = arr.map(i=>`<tr>
+    <td><strong>${i.cliente}</strong></td>
+    <td><span class="pill blue">${i.plan}</span></td>
+    <td class="amt green">${fmt(i.monto)}</td>
+    <td><span class="pill ${i.estado==='pagado'?'green':i.estado==='pendiente'?'red':'yellow'}">${i.estado}</span></td>
+  </tr>`).join('');
+}
+
+// Set current month in selector
+document.getElementById('monthSel').value = state.mes;
+if (sessionStorage.getItem(SESSION_KEY) === '1') renderAll();
+</script>
+</body>
+</html>
