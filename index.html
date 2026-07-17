@@ -54,7 +54,7 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
 .ph-sub{font-size:11px;color:var(--muted);margin-top:3px}
 
 /* KPI GRID */
-.kpi-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:24px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:24px}
 .kpi{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px;position:relative;overflow:hidden}
 .kpi.hl{border-color:rgba(245,200,66,.25);background:var(--ydim2)}
 .kpi-label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
@@ -180,6 +180,8 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
     <div class="nav-tab" onclick="showPage('ingresos',this)">Ingresos</div>
     <div class="nav-tab" onclick="showPage('gastos',this)">Gastos fijos</div>
     <div class="nav-tab" onclick="showPage('equipo',this)">Equipo</div>
+    <div class="nav-tab" onclick="showPage('socios',this)">Socios</div>
+    <div class="nav-tab" onclick="showPage('deuda',this)">Deuda</div>
     <div class="nav-tab" onclick="showPage('diarios',this)">Diarios</div>
     <div class="nav-tab" onclick="showPage('dinero',this)">Dinero</div>
   </nav>
@@ -210,6 +212,8 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
     <div class="kpi"><div class="kpi-label">Ingresos</div><div class="kpi-val green" id="k-ing">$0</div><div class="kpi-sub" id="k-ing-sub">0 clientes</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-ing" style="width:0%;background:var(--green)"></div></div></div>
     <div class="kpi"><div class="kpi-label">Gastos fijos</div><div class="kpi-val red" id="k-gf">$0</div><div class="kpi-sub" id="k-gf-sub">0 conceptos</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-gf" style="width:0%;background:var(--red)"></div></div></div>
     <div class="kpi"><div class="kpi-label">Pagos equipo</div><div class="kpi-val red" id="k-eq">$0</div><div class="kpi-sub" id="k-eq-sub">0 personas</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-eq" style="width:0%;background:var(--red)"></div></div></div>
+    <div class="kpi"><div class="kpi-label">Sueldos socios</div><div class="kpi-val purple" id="k-so">$0</div><div class="kpi-sub" id="k-so-sub">0 socios</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-so" style="width:0%;background:var(--purple)"></div></div></div>
+    <div class="kpi"><div class="kpi-label">Ahorro deuda (mes)</div><div class="kpi-val orange" id="k-ab">$0</div><div class="kpi-sub" id="k-ab-sub">meta 10M</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-ab" style="width:0%;background:var(--orange)"></div></div></div>
     <div class="kpi"><div class="kpi-label">Gastos diarios</div><div class="kpi-val red" id="k-gd">$0</div><div class="kpi-sub" id="k-gd-sub">0 registros</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-gd" style="width:0%;background:var(--red)"></div></div></div>
     <div class="kpi hl"><div class="kpi-label">Utilidad neta</div><div class="kpi-val yellow" id="k-ut">$0</div><div class="kpi-sub" id="k-margen">Margen 0%</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-ut" style="width:0%;background:var(--yellow)"></div></div></div>
     <div class="kpi"><div class="kpi-label">Total en caja</div><div class="kpi-val blue" id="k-caja">$0</div><div class="kpi-sub">Bancos + efectivo</div><div class="kpi-bar"><div class="kpi-bar-fill" id="b-caja" style="width:0%;background:var(--blue)"></div></div></div>
@@ -222,6 +226,10 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
     <div class="util-div">−</div>
     <div class="util-item"><div class="util-label">Equipo</div><div class="util-val red" id="u-eq">$0</div></div>
     <div class="util-div">−</div>
+    <div class="util-item"><div class="util-label">Socios</div><div class="util-val red" id="u-so">$0</div></div>
+    <div class="util-div">−</div>
+    <div class="util-item"><div class="util-label">Ahorro deuda</div><div class="util-val red" id="u-ab">$0</div></div>
+    <div class="util-div">−</div>
     <div class="util-item"><div class="util-label">Diarios</div><div class="util-val red" id="u-gd">$0</div></div>
     <div class="util-div">=</div>
     <div class="util-result">
@@ -229,6 +237,14 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
       <div class="util-val yellow" id="u-ut">$0</div>
       <div style="font-size:10px;color:var(--yellow);margin-top:3px" id="u-margen">Margen 0%</div>
     </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Presupuesto vs. real</div><button class="btn-add" onclick="openModal('presupuesto')">✎ Editar metas</button></div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Presupuestado</th><th>Real</th><th>Diferencia</th></tr></thead>
+      <tbody id="tbl-presupuesto"></tbody>
+    </table>
   </div>
 
   <div class="section">
@@ -272,6 +288,49 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
     <table class="tbl">
       <thead><tr><th>Persona</th><th>Rol</th><th>Monto (COP)</th><th>Estado</th><th></th></tr></thead>
       <tbody id="tbl-equipo"><tr><td colspan="5" class="empty">Sin pagos registrados</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- SOCIOS -->
+<div class="page" id="page-socios">
+  <div class="ph"><div class="ph-title">Sueldos de socios</div><div class="ph-sub" id="so-sub">Junio 2026 · separado de la nómina del equipo</div></div>
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Sueldos del mes</div><button class="btn-add" onclick="openModal('socio')">+ Agregar</button></div>
+    <table class="tbl">
+      <thead><tr><th>Socio</th><th>Monto (COP)</th><th>Estado</th><th></th></tr></thead>
+      <tbody id="tbl-socios"><tr><td colspan="4" class="empty">Sin sueldos registrados</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- DEUDA -->
+<div class="page" id="page-deuda">
+  <div class="ph"><div class="ph-title">Pago de deuda</div><div class="ph-sub">Meta: liquidar de una sola vez antes de la fecha límite</div></div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+    <div class="kpi"><div class="kpi-label">Deuda total</div><div class="kpi-val red" id="d-total">$0</div></div>
+    <div class="kpi"><div class="kpi-label">Abonado</div><div class="kpi-val green" id="d-abonado">$0</div></div>
+    <div class="kpi hl"><div class="kpi-label">Restante</div><div class="kpi-val yellow" id="d-restante">$0</div></div>
+    <div class="kpi"><div class="kpi-label">Meses restantes</div><div class="kpi-val blue" id="d-meses">0</div><div class="kpi-sub" id="d-meta-sub">meta: —</div></div>
+    <div class="kpi"><div class="kpi-label">Cuota sugerida/mes</div><div class="kpi-val orange" id="d-sugerido">$0</div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Progreso</div><button class="btn-add" onclick="openModal('metadeuda')">✎ Editar meta</button></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:16px 18px">
+      <div style="height:10px;background:var(--black3);border-radius:100px;overflow:hidden">
+        <div id="d-bar" style="height:100%;width:0%;background:var(--yellow);border-radius:100px;transition:width .8s ease"></div>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--muted)" id="d-bar-label">0% pagado</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Abonos registrados</div><button class="btn-add" onclick="openModal('abono')">+ Agregar abono</button></div>
+    <table class="tbl">
+      <thead><tr><th>Monto (COP)</th><th>Fecha</th><th></th></tr></thead>
+      <tbody id="tbl-abonos"><tr><td colspan="3" class="empty">Sin abonos registrados</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -415,6 +474,48 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-socio">
+  <div class="modal">
+    <div class="modal-title">Sueldo de socio</div>
+    <div class="form-group"><label class="form-label">Nombre</label><input class="form-input" id="so-nombre" placeholder="Ej: Tú / Esposa"></div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="so-monto" type="number" placeholder="Ej: 3000000"></div>
+    <div class="form-group"><label class="form-label">Estado</label>
+      <select class="form-select" id="so-estado"><option value="pagado">Pagado</option><option value="pendiente">Pendiente</option></select>
+    </div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('socio')">Cancelar</button><button class="btn-primary" onclick="saveSocio()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-abono">
+  <div class="modal">
+    <div class="modal-title">Abono a la deuda</div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="ab-monto" type="number" placeholder="Ej: 2000000"></div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="ab-fecha" type="date"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('abono')">Cancelar</button><button class="btn-primary" onclick="saveAbono()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-metadeuda">
+  <div class="modal">
+    <div class="modal-title">Editar meta de deuda</div>
+    <div class="form-group"><label class="form-label">Deuda total (COP)</label><input class="form-input" id="md-total" type="number" placeholder="Ej: 10000000"></div>
+    <div class="form-group"><label class="form-label">Fecha límite</label><input class="form-input" id="md-fecha" type="month"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('metadeuda')">Cancelar</button><button class="btn-primary" onclick="saveMetaDeuda()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-presupuesto">
+  <div class="modal">
+    <div class="modal-title">Editar metas de presupuesto</div>
+    <div class="form-group"><label class="form-label">Ingresos (COP)</label><input class="form-input" id="pr-ingresos" type="number"></div>
+    <div class="form-group"><label class="form-label">Gastos fijos (COP)</label><input class="form-input" id="pr-gastos" type="number"></div>
+    <div class="form-group"><label class="form-label">Equipo / nómina (COP)</label><input class="form-input" id="pr-equipo" type="number"></div>
+    <div class="form-group"><label class="form-label">Sueldos socios (COP)</label><input class="form-input" id="pr-socios" type="number"></div>
+    <div class="form-group"><label class="form-label">Ahorro deuda (COP)</label><input class="form-input" id="pr-ahorro" type="number"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('presupuesto')">Cancelar</button><button class="btn-primary" onclick="savePresupuesto()">Guardar</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast">✓ Guardado</div>
 
 <script>
@@ -447,15 +548,25 @@ let state = {
   ingresos: {},
   gastos: {},
   equipo: {},
+  socios: {},
   diarios: {},
   bancos: [],
-  caja: []
+  caja: [],
+  deuda: { total: 10000000, metaFecha: '2026-12', abonos: [] },
+  presupuesto: { ingresos: 18800000, gastos: 1700000, equipo: 4450000, socios: 6000000, ahorro: 2000000 }
 };
 
 // Load from localStorage
 try {
   const saved = localStorage.getItem(KEY);
-  if (saved) state = JSON.parse(saved);
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    state = Object.assign({}, state, parsed);
+    if (!state.socios) state.socios = {};
+    if (!state.deuda) state.deuda = { total: 10000000, metaFecha: '2026-12', abonos: [] };
+    if (!state.deuda.abonos) state.deuda.abonos = [];
+    if (!state.presupuesto) state.presupuesto = { ingresos: 18800000, gastos: 1700000, equipo: 4450000, socios: 6000000, ahorro: 2000000 };
+  }
 } catch(e) {}
 
 function save() {
@@ -482,6 +593,7 @@ function getArr(type) {
   const m = getMes();
   if (type === 'bancos') return state.bancos || [];
   if (type === 'caja') return state.caja || [];
+  if (type === 'abonos') return (state.deuda && state.deuda.abonos) || [];
   if (!state[type]) state[type] = {};
   if (!state[type][m]) state[type][m] = [];
   return state[type][m];
@@ -502,6 +614,7 @@ function changeMonth() {
   document.getElementById('res-sub').textContent = label + ' · visión general del mes';
   document.getElementById('ing-sub').textContent = label + ' · mensualidades por cliente';
   document.getElementById('eq-sub').textContent = label + ' · honorarios y nómina';
+  document.getElementById('so-sub').textContent = label + ' · separado de la nómina del equipo';
   document.getElementById('gd-sub').textContent = label + ' · lo que sale día a día';
   renderAll();
 }
@@ -510,6 +623,18 @@ function openModal(type) {
   document.getElementById('modal-'+type).classList.add('open');
   if (type === 'ingreso') document.getElementById('in-fecha').valueAsDate = new Date();
   if (type === 'diario') document.getElementById('gd-fecha').valueAsDate = new Date();
+  if (type === 'abono') document.getElementById('ab-fecha').valueAsDate = new Date();
+  if (type === 'metadeuda') {
+    document.getElementById('md-total').value = state.deuda.total;
+    document.getElementById('md-fecha').value = state.deuda.metaFecha;
+  }
+  if (type === 'presupuesto') {
+    document.getElementById('pr-ingresos').value = state.presupuesto.ingresos;
+    document.getElementById('pr-gastos').value = state.presupuesto.gastos;
+    document.getElementById('pr-equipo').value = state.presupuesto.equipo;
+    document.getElementById('pr-socios').value = state.presupuesto.socios;
+    document.getElementById('pr-ahorro').value = state.presupuesto.ahorro;
+  }
 }
 function closeModal(type) { document.getElementById('modal-'+type).classList.remove('open'); }
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
@@ -557,6 +682,40 @@ function saveDiario() {
   save(); closeModal('diario'); clearInputs('gd-desc','gd-monto'); renderAll();
 }
 
+function saveSocio() {
+  const nombre = document.getElementById('so-nombre').value.trim();
+  const monto = parseFloat(document.getElementById('so-monto').value) || 0;
+  if (!nombre || !monto) return;
+  getArr('socios').push({id:Date.now(), nombre, monto, estado: document.getElementById('so-estado').value});
+  save(); closeModal('socio'); clearInputs('so-nombre','so-monto'); renderAll();
+}
+
+function saveAbono() {
+  const monto = parseFloat(document.getElementById('ab-monto').value) || 0;
+  const fecha = document.getElementById('ab-fecha').value;
+  if (!monto) return;
+  if (!state.deuda.abonos) state.deuda.abonos = [];
+  state.deuda.abonos.push({id:Date.now(), monto, fecha});
+  save(); closeModal('abono'); clearInputs('ab-monto'); renderAll();
+}
+
+function saveMetaDeuda() {
+  const total = parseFloat(document.getElementById('md-total').value) || 0;
+  const fecha = document.getElementById('md-fecha').value;
+  state.deuda.total = total;
+  state.deuda.metaFecha = fecha;
+  save(); closeModal('metadeuda'); renderAll();
+}
+
+function savePresupuesto() {
+  state.presupuesto.ingresos = parseFloat(document.getElementById('pr-ingresos').value) || 0;
+  state.presupuesto.gastos = parseFloat(document.getElementById('pr-gastos').value) || 0;
+  state.presupuesto.equipo = parseFloat(document.getElementById('pr-equipo').value) || 0;
+  state.presupuesto.socios = parseFloat(document.getElementById('pr-socios').value) || 0;
+  state.presupuesto.ahorro = parseFloat(document.getElementById('pr-ahorro').value) || 0;
+  save(); closeModal('presupuesto'); renderAll();
+}
+
 function saveBanco() {
   const nombre = document.getElementById('ba-nombre').value.trim();
   const saldo = parseFloat(document.getElementById('ba-saldo').value) || 0;
@@ -576,6 +735,7 @@ function saveCaja() {
 function deleteItem(type, id) {
   if (type === 'bancos') { state.bancos = state.bancos.filter(i=>i.id!==id); }
   else if (type === 'caja') { state.caja = state.caja.filter(i=>i.id!==id); }
+  else if (type === 'abonos') { state.deuda.abonos = (state.deuda.abonos||[]).filter(i=>i.id!==id); }
   else if (type === 'diarios') {
     const arr = getArr('diarios');
     const item = arr.find(i=>i.id===id);
@@ -594,7 +754,7 @@ function deleteItem(type, id) {
 }
 
 function renderAll() {
-  renderIngresos(); renderGastos(); renderEquipo(); renderDiarios(); renderDinero(); recalcular();
+  renderIngresos(); renderGastos(); renderEquipo(); renderSocios(); renderDeuda(); renderDiarios(); renderDinero(); recalcular();
 }
 
 function renderIngresos() {
@@ -637,6 +797,52 @@ function renderEquipo() {
   </tr>`).join('');
 }
 
+function renderSocios() {
+  const arr = getArr('socios');
+  const tb = document.getElementById('tbl-socios');
+  if (!arr.length) { tb.innerHTML = '<tr><td colspan="4" class="empty">Sin sueldos registrados</td></tr>'; return; }
+  tb.innerHTML = arr.map(s => `<tr>
+    <td><strong>${s.nombre}</strong></td>
+    <td class="amt red">${fmt(s.monto)}</td>
+    <td><span class="pill ${s.estado==='pagado'?'green':'red'}">${s.estado}</span></td>
+    <td><button class="btn-del" onclick="deleteItem('socios',${s.id})">✕</button></td>
+  </tr>`).join('');
+}
+
+function renderDeuda() {
+  const d = state.deuda;
+  const abonos = getArr('abonos');
+  const abonado = abonos.reduce((s,a)=>s+a.monto,0);
+  const restante = Math.max(0, d.total - abonado);
+  const pct = d.total > 0 ? Math.min(100, Math.round((abonado/d.total)*100)) : 0;
+
+  // meses restantes desde el mes seleccionado hasta la meta
+  let meses = 0;
+  if (d.metaFecha) {
+    const [ay, am] = getMes().split('-').map(Number);
+    const [my, mm] = d.metaFecha.split('-').map(Number);
+    meses = Math.max(1, (my - ay) * 12 + (mm - am) + 1);
+  }
+  const sugerido = meses > 0 ? Math.round(restante / meses) : 0;
+
+  document.getElementById('d-total').textContent = fmt(d.total);
+  document.getElementById('d-abonado').textContent = fmt(abonado);
+  document.getElementById('d-restante').textContent = fmt(restante);
+  document.getElementById('d-meses').textContent = meses;
+  document.getElementById('d-meta-sub').textContent = 'meta: ' + (d.metaFecha || '—');
+  document.getElementById('d-sugerido').textContent = fmt(sugerido);
+  document.getElementById('d-bar').style.width = pct + '%';
+  document.getElementById('d-bar-label').textContent = pct + '% pagado';
+
+  const tb = document.getElementById('tbl-abonos');
+  if (!abonos.length) { tb.innerHTML = '<tr><td colspan="3" class="empty">Sin abonos registrados</td></tr>'; return; }
+  tb.innerHTML = abonos.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(a => `<tr>
+    <td class="amt green">${fmt(a.monto)}</td>
+    <td style="color:var(--muted)">${a.fecha||'—'}</td>
+    <td><button class="btn-del" onclick="deleteItem('abonos',${a.id})">✕</button></td>
+  </tr>`).join('');
+}
+
 function renderDiarios() {
   const arr = getArr('diarios');
   const tb = document.getElementById('tbl-diarios');
@@ -664,12 +870,44 @@ function renderDinero() {
   lc.innerHTML = caja.length ? caja.map(c=>`<div class="dinero-item"><span class="dinero-name">${c.desc}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(c.monto)}</span><button class="btn-del" onclick="deleteItem('caja',${c.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin registros</div>';
 }
 
+function renderPresupuesto(real) {
+  const p = state.presupuesto;
+  const utReal = real.ing - real.gf - real.eq - real.so - real.abMes;
+  const utPres = p.ingresos - p.gastos - p.equipo - p.socios - p.ahorro;
+
+  // filas: [label, presupuestado, real, mayorEsMejor]
+  const filas = [
+    ['Ingresos', p.ingresos, real.ing, true],
+    ['Gastos fijos', p.gastos, real.gf, false],
+    ['Equipo / nómina', p.equipo, real.eq, false],
+    ['Sueldos socios', p.socios, real.so, false],
+    ['Ahorro deuda', p.ahorro, real.abMes, true],
+    ['Utilidad', utPres, utReal, true],
+  ];
+
+  const tb = document.getElementById('tbl-presupuesto');
+  tb.innerHTML = filas.map(([label, pres, realVal, mayorMejor]) => {
+    const diff = realVal - pres;
+    const favorable = mayorMejor ? diff >= 0 : diff <= 0;
+    const color = diff === 0 ? '' : (favorable ? 'green' : 'red');
+    const sign = diff > 0 ? '+' : '';
+    return `<tr>
+      <td><strong>${label}</strong></td>
+      <td class="amt">${fmt(pres)}</td>
+      <td class="amt blue">${fmt(realVal)}</td>
+      <td class="amt ${color}">${sign}${fmt(diff)}</td>
+    </tr>`;
+  }).join('');
+}
+
 function recalcular() {
   const ing = getArr('ingresos').reduce((s,i)=>s+i.monto,0);
   const gf = getArr('gastos').reduce((s,g)=>s+g.monto,0);
   const eq = getArr('equipo').reduce((s,e)=>s+e.monto,0);
+  const so = getArr('socios').reduce((s,x)=>s+x.monto,0);
   const gd = getArr('diarios').reduce((s,d)=>s+d.monto,0);
-  const ut = ing - gf - eq - gd;
+  const abMes = getArr('abonos').filter(a=>(a.fecha||'').startsWith(getMes())).reduce((s,a)=>s+a.monto,0);
+  const ut = ing - gf - eq - so - abMes - gd;
   const margen = ing > 0 ? Math.round((ut/ing)*100) : 0;
   const bancos = getArr('bancos').reduce((s,b)=>s+b.saldo,0);
   const caja = getArr('caja').reduce((s,c)=>s+c.monto,0);
@@ -681,6 +919,10 @@ function recalcular() {
   document.getElementById('k-gf-sub').textContent = getArr('gastos').length + ' conceptos';
   document.getElementById('k-eq').textContent = fmtShort(eq);
   document.getElementById('k-eq-sub').textContent = getArr('equipo').length + ' personas';
+  document.getElementById('k-so').textContent = fmtShort(so);
+  document.getElementById('k-so-sub').textContent = getArr('socios').length + ' socios';
+  document.getElementById('k-ab').textContent = fmtShort(abMes);
+  document.getElementById('k-ab-sub').textContent = 'meta ' + fmtShort(state.deuda.total);
   document.getElementById('k-gd').textContent = fmtShort(gd);
   document.getElementById('k-gd-sub').textContent = getArr('diarios').length + ' registros';
   document.getElementById('k-ut').textContent = fmtShort(ut);
@@ -691,6 +933,8 @@ function recalcular() {
   document.getElementById('u-ing').textContent = fmt(ing);
   document.getElementById('u-gf').textContent = fmt(gf);
   document.getElementById('u-eq').textContent = fmt(eq);
+  document.getElementById('u-so').textContent = fmt(so);
+  document.getElementById('u-ab').textContent = fmt(abMes);
   document.getElementById('u-gd').textContent = fmt(gd);
   document.getElementById('u-ut').textContent = fmt(ut);
   document.getElementById('u-ut').style.color = ut >= 0 ? 'var(--yellow)' : 'var(--red)';
@@ -700,10 +944,14 @@ function recalcular() {
     document.getElementById('b-ing').style.width = '100%';
     document.getElementById('b-gf').style.width = Math.min(100,(gf/ing)*100)+'%';
     document.getElementById('b-eq').style.width = Math.min(100,(eq/ing)*100)+'%';
+    document.getElementById('b-so').style.width = Math.min(100,(so/ing)*100)+'%';
+    document.getElementById('b-ab').style.width = Math.min(100,(abMes/ing)*100)+'%';
     document.getElementById('b-gd').style.width = Math.min(100,(gd/ing)*100)+'%';
     document.getElementById('b-ut').style.width = Math.max(0,Math.min(100,margen))+'%';
   }
   if (totalCaja > 0) document.getElementById('b-caja').style.width = '100%';
+
+  renderPresupuesto({ing, gf, eq, so, abMes});
 
   // Resumen clientes
   const tb = document.getElementById('res-clientes');
