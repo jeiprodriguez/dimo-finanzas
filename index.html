@@ -182,6 +182,7 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
     <div class="nav-tab" onclick="showPage('equipo',this)">Equipo</div>
     <div class="nav-tab" onclick="showPage('socios',this)">Socios</div>
     <div class="nav-tab" onclick="showPage('deuda',this)">Deuda</div>
+    <div class="nav-tab" onclick="showPage('personal',this)">Personal</div>
     <div class="nav-tab" onclick="showPage('diarios',this)">Diarios</div>
     <div class="nav-tab" onclick="showPage('dinero',this)">Dinero</div>
   </nav>
@@ -331,6 +332,34 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
     <table class="tbl">
       <thead><tr><th>Monto (COP)</th><th>Fecha</th><th></th></tr></thead>
       <tbody id="tbl-abonos"><tr><td colspan="3" class="empty">Sin abonos registrados</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PERSONAL -->
+<div class="page" id="page-personal">
+  <div class="ph"><div class="ph-title">Gastos personales del hogar</div><div class="ph-sub" id="pe-sub">Junio 2026 · completamente separado de las finanzas de Dimo</div></div>
+
+  <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+    <div class="kpi"><div class="kpi-label">Sueldos recibidos</div><div class="kpi-val green" id="k-psue">$0</div><div class="kpi-sub">desde Socios</div></div>
+    <div class="kpi"><div class="kpi-label">Fijos personales</div><div class="kpi-val red" id="k-pf">$0</div><div class="kpi-sub" id="k-pf-sub">0 conceptos</div></div>
+    <div class="kpi"><div class="kpi-label">Variables personales</div><div class="kpi-val red" id="k-pv">$0</div><div class="kpi-sub" id="k-pv-sub">0 registros</div></div>
+    <div class="kpi hl"><div class="kpi-label">Disponible</div><div class="kpi-val yellow" id="k-ptotal">$0</div><div class="kpi-sub" id="k-ptotal-sub">sueldos − gastos</div></div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Gastos fijos personales</div><button class="btn-add" onclick="openModal('personalfijo')">+ Agregar</button></div>
+    <table class="tbl">
+      <thead><tr><th>Concepto</th><th>Categoría</th><th>Monto (COP)</th><th></th></tr></thead>
+      <tbody id="tbl-personalfijo"><tr><td colspan="4" class="empty">Sin gastos registrados</td></tr></tbody>
+    </table>
+  </div>
+
+  <div class="section">
+    <div class="sec-head"><div class="sec-title">Gastos variables personales</div><button class="btn-add" onclick="openModal('personalvar')">+ Agregar</button></div>
+    <table class="tbl">
+      <thead><tr><th>Descripción</th><th>Categoría</th><th>Monto (COP)</th><th>Fecha</th><th></th></tr></thead>
+      <tbody id="tbl-personalvar"><tr><td colspan="5" class="empty">Sin gastos registrados</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -516,6 +545,38 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
   </div>
 </div>
 
+<div class="modal-overlay" id="modal-personalfijo">
+  <div class="modal">
+    <div class="modal-title">Gasto fijo personal</div>
+    <div class="form-group"><label class="form-label">Concepto</label><input class="form-input" id="pf-concepto" placeholder="Ej: Servicios casa, cuota carro"></div>
+    <div class="form-group"><label class="form-label">Categoría</label>
+      <select class="form-select" id="pf-cat">
+        <option>Vivienda</option><option>Servicios públicos</option>
+        <option>Transporte</option><option>Salud</option>
+        <option>Deuda personal</option><option>Educación</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="pf-monto" type="number" placeholder="Ej: 900000"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('personalfijo')">Cancelar</button><button class="btn-primary" onclick="savePersonalFijo()">Guardar</button></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-personalvar">
+  <div class="modal">
+    <div class="modal-title">Gasto variable personal</div>
+    <div class="form-group"><label class="form-label">Descripción</label><input class="form-input" id="pv-desc" placeholder="Ej: Mercado, comida, ropa"></div>
+    <div class="form-group"><label class="form-label">Categoría</label>
+      <select class="form-select" id="pv-cat">
+        <option>Alimentación</option><option>Ropa</option><option>Transporte</option>
+        <option>Entretenimiento</option><option>Salud</option><option>Otro</option>
+      </select>
+    </div>
+    <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="pv-monto" type="number" placeholder="Ej: 80000"></div>
+    <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="pv-fecha" type="date"></div>
+    <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('personalvar')">Cancelar</button><button class="btn-primary" onclick="savePersonalVar()">Guardar</button></div>
+  </div>
+</div>
+
 <div class="toast" id="toast">✓ Guardado</div>
 
 <script>
@@ -549,6 +610,8 @@ let state = {
   gastos: {},
   equipo: {},
   socios: {},
+  personalFijos: {},
+  personalVariables: {},
   diarios: {},
   bancos: [],
   caja: [],
@@ -563,6 +626,8 @@ try {
     const parsed = JSON.parse(saved);
     state = Object.assign({}, state, parsed);
     if (!state.socios) state.socios = {};
+    if (!state.personalFijos) state.personalFijos = {};
+    if (!state.personalVariables) state.personalVariables = {};
     if (!state.deuda) state.deuda = { total: 10000000, metaFecha: '2026-12', abonos: [] };
     if (!state.deuda.abonos) state.deuda.abonos = [];
     if (!state.presupuesto) state.presupuesto = { ingresos: 18800000, gastos: 1700000, equipo: 4450000, socios: 6000000, ahorro: 2000000 };
@@ -615,6 +680,7 @@ function changeMonth() {
   document.getElementById('ing-sub').textContent = label + ' · mensualidades por cliente';
   document.getElementById('eq-sub').textContent = label + ' · honorarios y nómina';
   document.getElementById('so-sub').textContent = label + ' · separado de la nómina del equipo';
+  document.getElementById('pe-sub').textContent = label + ' · completamente separado de las finanzas de Dimo';
   document.getElementById('gd-sub').textContent = label + ' · lo que sale día a día';
   renderAll();
 }
@@ -624,6 +690,7 @@ function openModal(type) {
   if (type === 'ingreso') document.getElementById('in-fecha').valueAsDate = new Date();
   if (type === 'diario') document.getElementById('gd-fecha').valueAsDate = new Date();
   if (type === 'abono') document.getElementById('ab-fecha').valueAsDate = new Date();
+  if (type === 'personalvar') document.getElementById('pv-fecha').valueAsDate = new Date();
   if (type === 'metadeuda') {
     document.getElementById('md-total').value = state.deuda.total;
     document.getElementById('md-fecha').value = state.deuda.metaFecha;
@@ -716,6 +783,22 @@ function savePresupuesto() {
   save(); closeModal('presupuesto'); renderAll();
 }
 
+function savePersonalFijo() {
+  const concepto = document.getElementById('pf-concepto').value.trim();
+  const monto = parseFloat(document.getElementById('pf-monto').value) || 0;
+  if (!concepto || !monto) return;
+  getArr('personalFijos').push({id:Date.now(), concepto, cat: document.getElementById('pf-cat').value, monto});
+  save(); closeModal('personalfijo'); clearInputs('pf-concepto','pf-monto'); renderAll();
+}
+
+function savePersonalVar() {
+  const desc = document.getElementById('pv-desc').value.trim();
+  const monto = parseFloat(document.getElementById('pv-monto').value) || 0;
+  if (!desc || !monto) return;
+  getArr('personalVariables').push({id:Date.now(), desc, cat: document.getElementById('pv-cat').value, monto, fecha: document.getElementById('pv-fecha').value});
+  save(); closeModal('personalvar'); clearInputs('pv-desc','pv-monto'); renderAll();
+}
+
 function saveBanco() {
   const nombre = document.getElementById('ba-nombre').value.trim();
   const saldo = parseFloat(document.getElementById('ba-saldo').value) || 0;
@@ -754,7 +837,7 @@ function deleteItem(type, id) {
 }
 
 function renderAll() {
-  renderIngresos(); renderGastos(); renderEquipo(); renderSocios(); renderDeuda(); renderDiarios(); renderDinero(); recalcular();
+  renderIngresos(); renderGastos(); renderEquipo(); renderSocios(); renderDeuda(); renderPersonal(); renderDiarios(); renderDinero(); recalcular();
 }
 
 function renderIngresos() {
@@ -868,6 +951,40 @@ function renderDinero() {
   lb.innerHTML = bancos.length ? bancos.map(b=>`<div class="dinero-item"><span class="dinero-name">${b.nombre}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(b.saldo)}</span><button class="btn-del" onclick="deleteItem('bancos',${b.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin cuentas registradas</div>';
   const lc = document.getElementById('lista-caja');
   lc.innerHTML = caja.length ? caja.map(c=>`<div class="dinero-item"><span class="dinero-name">${c.desc}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(c.monto)}</span><button class="btn-del" onclick="deleteItem('caja',${c.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin registros</div>';
+}
+
+function renderPersonal() {
+  const fijos = getArr('personalFijos');
+  const vars = getArr('personalVariables');
+
+  const tbF = document.getElementById('tbl-personalfijo');
+  tbF.innerHTML = fijos.length ? fijos.map(f => `<tr>
+    <td><strong>${f.concepto}</strong></td>
+    <td><span class="pill muted">${f.cat}</span></td>
+    <td class="amt red">${fmt(f.monto)}</td>
+    <td><button class="btn-del" onclick="deleteItem('personalFijos',${f.id})">✕</button></td>
+  </tr>`).join('') : '<tr><td colspan="4" class="empty">Sin gastos registrados</td></tr>';
+
+  const tbV = document.getElementById('tbl-personalvar');
+  tbV.innerHTML = vars.length ? vars.map(v => `<tr>
+    <td><strong>${v.desc}</strong></td>
+    <td><span class="pill muted">${v.cat}</span></td>
+    <td class="amt red">${fmt(v.monto)}</td>
+    <td style="color:var(--muted)">${v.fecha||'—'}</td>
+    <td><button class="btn-del" onclick="deleteItem('personalVariables',${v.id})">✕</button></td>
+  </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin gastos registrados</td></tr>';
+
+  const totalF = fijos.reduce((s,f)=>s+f.monto,0);
+  const totalV = vars.reduce((s,v)=>s+v.monto,0);
+  const sueldos = getArr('socios').reduce((s,x)=>s+x.monto,0);
+  const disponible = sueldos - totalF - totalV;
+  document.getElementById('k-psue').textContent = fmtShort(sueldos);
+  document.getElementById('k-pf').textContent = fmtShort(totalF);
+  document.getElementById('k-pf-sub').textContent = fijos.length + ' conceptos';
+  document.getElementById('k-pv').textContent = fmtShort(totalV);
+  document.getElementById('k-pv-sub').textContent = vars.length + ' registros';
+  document.getElementById('k-ptotal').textContent = fmtShort(disponible);
+  document.getElementById('k-ptotal').className = 'kpi-val ' + (disponible >= 0 ? 'yellow' : 'red');
 }
 
 function renderPresupuesto(real) {
