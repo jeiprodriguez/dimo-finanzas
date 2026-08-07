@@ -122,9 +122,11 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
 .pill.purple{background:var(--pdim);color:var(--purple)}
 .pill.muted{background:var(--black3);color:var(--muted)}
 
-/* DELETE BTN */
+/* DELETE / EDIT BTN */
 .btn-del{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;transition:all .15s}
 .btn-del:hover{background:var(--rdim);color:var(--red)}
+.btn-edit{background:none;border:none;color:var(--muted2);cursor:pointer;font-size:13px;padding:2px 6px;border-radius:4px;transition:all .15s}
+.btn-edit:hover{background:var(--ydim);color:var(--yellow)}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
@@ -186,20 +188,25 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
     <div class="nav-tab" onclick="showPage('diarios',this)">Diarios</div>
     <div class="nav-tab" onclick="showPage('dinero',this)">Dinero</div>
   </nav>
-  <select class="month-sel" id="monthSel" onchange="changeMonth()">
-    <option value="2026-01">Enero 2026</option>
-    <option value="2026-02">Febrero 2026</option>
-    <option value="2026-03">Marzo 2026</option>
-    <option value="2026-04">Abril 2026</option>
-    <option value="2026-05">Mayo 2026</option>
-    <option value="2026-06" selected>Junio 2026</option>
-    <option value="2026-07">Julio 2026</option>
-    <option value="2026-08">Agosto 2026</option>
-    <option value="2026-09">Septiembre 2026</option>
-    <option value="2026-10">Octubre 2026</option>
-    <option value="2026-11">Noviembre 2026</option>
-    <option value="2026-12">Diciembre 2026</option>
-  </select>
+  <div style="display:flex;align-items:center;gap:8px">
+    <select class="month-sel" id="monthSel" onchange="changeMonth()">
+      <option value="2026-01">Enero 2026</option>
+      <option value="2026-02">Febrero 2026</option>
+      <option value="2026-03">Marzo 2026</option>
+      <option value="2026-04">Abril 2026</option>
+      <option value="2026-05">Mayo 2026</option>
+      <option value="2026-06" selected>Junio 2026</option>
+      <option value="2026-07">Julio 2026</option>
+      <option value="2026-08">Agosto 2026</option>
+      <option value="2026-09">Septiembre 2026</option>
+      <option value="2026-10">Octubre 2026</option>
+      <option value="2026-11">Noviembre 2026</option>
+      <option value="2026-12">Diciembre 2026</option>
+    </select>
+    <button class="btn-add" onclick="exportData()" title="Descargar copia de seguridad de todos los meses">⬇ Backup</button>
+    <button class="btn-add" onclick="document.getElementById('import-file').click()" title="Restaurar desde un archivo de backup">⬆ Restaurar</button>
+    <input type="file" id="import-file" accept="application/json" style="display:none" onchange="importData(event)">
+  </div>
 </header>
 
 <!-- RESUMEN -->
@@ -348,18 +355,39 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
   </div>
 
   <div class="section">
+    <div class="sec-head"><div class="sec-title">Gastos por persona (fijos + variables)</div></div>
+    <div class="kpi-grid" style="grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">
+      <div class="kpi"><div class="kpi-label">👤 Jeip</div><div class="kpi-val blue" id="k-pj">$0</div><div class="kpi-sub" id="k-pj-sub">0 registros</div></div>
+      <div class="kpi"><div class="kpi-label">👤 Mariana</div><div class="kpi-val purple" id="k-pm">$0</div><div class="kpi-sub" id="k-pm-sub">0 registros</div></div>
+      <div class="kpi"><div class="kpi-label">👥 Ambos (compartido)</div><div class="kpi-val orange" id="k-pa">$0</div><div class="kpi-sub" id="k-pa-sub">0 registros</div></div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="sec-head">
+      <div class="sec-title">Filtrar por responsable</div>
+    </div>
+    <nav class="nav" id="filtro-personal" style="margin-bottom:12px">
+      <div class="nav-tab active" onclick="setFiltroPersonal('todos',this)">Todos</div>
+      <div class="nav-tab" onclick="setFiltroPersonal('jeip',this)">Jeip</div>
+      <div class="nav-tab" onclick="setFiltroPersonal('mariana',this)">Mariana</div>
+      <div class="nav-tab" onclick="setFiltroPersonal('ambos',this)">Ambos (fijos compartidos)</div>
+    </nav>
+  </div>
+
+  <div class="section">
     <div class="sec-head"><div class="sec-title">Gastos fijos personales</div><button class="btn-add" onclick="openModal('personalfijo')">+ Agregar</button></div>
     <table class="tbl">
-      <thead><tr><th>Concepto</th><th>Categoría</th><th>Monto (COP)</th><th></th></tr></thead>
-      <tbody id="tbl-personalfijo"><tr><td colspan="4" class="empty">Sin gastos registrados</td></tr></tbody>
+      <thead><tr><th>Concepto</th><th>Categoría</th><th>Responsable</th><th>Monto (COP)</th><th></th></tr></thead>
+      <tbody id="tbl-personalfijo"><tr><td colspan="5" class="empty">Sin gastos registrados</td></tr></tbody>
     </table>
   </div>
 
   <div class="section">
     <div class="sec-head"><div class="sec-title">Gastos variables personales</div><button class="btn-add" onclick="openModal('personalvar')">+ Agregar</button></div>
     <table class="tbl">
-      <thead><tr><th>Descripción</th><th>Categoría</th><th>Monto (COP)</th><th>Fecha</th><th></th></tr></thead>
-      <tbody id="tbl-personalvar"><tr><td colspan="5" class="empty">Sin gastos registrados</td></tr></tbody>
+      <thead><tr><th>Descripción</th><th>Categoría</th><th>Responsable</th><th>Monto (COP)</th><th>Fecha</th><th></th></tr></thead>
+      <tbody id="tbl-personalvar"><tr><td colspan="6" class="empty">Sin gastos registrados</td></tr></tbody>
     </table>
   </div>
 </div>
@@ -557,6 +585,13 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
       </select>
     </div>
     <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="pf-monto" type="number" placeholder="Ej: 900000"></div>
+    <div class="form-group"><label class="form-label">Responsable</label>
+      <select class="form-select" id="pf-resp">
+        <option value="ambos">👥 Ambos (fijo compartido)</option>
+        <option value="jeip">👤 Jeip</option>
+        <option value="mariana">👤 Mariana</option>
+      </select>
+    </div>
     <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('personalfijo')">Cancelar</button><button class="btn-primary" onclick="savePersonalFijo()">Guardar</button></div>
   </div>
 </div>
@@ -572,6 +607,13 @@ body{background:var(--black);color:var(--white);font-family:'Syne',sans-serif;fo
       </select>
     </div>
     <div class="form-group"><label class="form-label">Monto (COP)</label><input class="form-input" id="pv-monto" type="number" placeholder="Ej: 80000"></div>
+    <div class="form-group"><label class="form-label">Responsable</label>
+      <select class="form-select" id="pv-resp">
+        <option value="ambos">👥 Ambos (compartido)</option>
+        <option value="jeip">👤 Jeip</option>
+        <option value="mariana">👤 Mariana</option>
+      </select>
+    </div>
     <div class="form-group"><label class="form-label">Fecha</label><input class="form-input" id="pv-fecha" type="date"></div>
     <div class="modal-actions"><button class="btn-secondary" onclick="closeModal('personalvar')">Cancelar</button><button class="btn-primary" onclick="savePersonalVar()">Guardar</button></div>
   </div>
@@ -604,6 +646,39 @@ if (sessionStorage.getItem(SESSION_KEY) === '1') {
 }
 
 const KEY = 'dimo_finanzas_v2';
+let personalFilter = 'todos'; // filtro activo de la vista Personal: todos | jeip | mariana | ambos
+
+// --- Edición de registros ---
+let editState = { type: null, id: null };
+
+const MODAL_MAP = {
+  ingresos: 'ingreso', gastos: 'gasto', equipo: 'equipo', socios: 'socio',
+  diarios: 'diario', personalFijos: 'personalfijo', personalVariables: 'personalvar',
+  bancos: 'banco', caja: 'caja', abonos: 'abono'
+};
+const MODAL_TITLES = {
+  ingreso: 'Nuevo ingreso', gasto: 'Nuevo gasto fijo', equipo: 'Pago al equipo', socio: 'Sueldo de socio',
+  diario: 'Gasto diario', personalfijo: 'Gasto fijo personal', personalvar: 'Gasto variable personal',
+  banco: 'Cuenta bancaria', caja: 'Caja fuerte', abono: 'Abono a la deuda'
+};
+const MODAL_EDIT_TITLES = {
+  ingreso: 'Editar ingreso', gasto: 'Editar gasto fijo', equipo: 'Editar pago al equipo', socio: 'Editar sueldo de socio',
+  diario: 'Editar gasto diario', personalfijo: 'Editar gasto fijo personal', personalvar: 'Editar gasto variable personal',
+  banco: 'Editar cuenta bancaria', caja: 'Editar caja fuerte', abono: 'Editar abono'
+};
+const FIELD_MAP = {
+  ingresos: item => ({'in-cliente': item.cliente, 'in-plan': item.plan, 'in-monto': item.monto, 'in-estado': item.estado, 'in-fecha': item.fecha}),
+  gastos: item => ({'gf-concepto': item.concepto, 'gf-cat': item.cat, 'gf-monto': item.monto, 'gf-rec': item.rec}),
+  equipo: item => ({'eq-nombre': item.nombre, 'eq-rol': item.rol, 'eq-monto': item.monto, 'eq-estado': item.estado}),
+  socios: item => ({'so-nombre': item.nombre, 'so-monto': item.monto, 'so-estado': item.estado}),
+  diarios: item => ({'gd-desc': item.desc, 'gd-cat': item.cat, 'gd-monto': item.monto, 'gd-origen': item.origen, 'gd-fecha': item.fecha}),
+  personalFijos: item => ({'pf-concepto': item.concepto, 'pf-cat': item.cat, 'pf-monto': item.monto, 'pf-resp': item.responsable || 'ambos'}),
+  personalVariables: item => ({'pv-desc': item.desc, 'pv-cat': item.cat, 'pv-monto': item.monto, 'pv-fecha': item.fecha, 'pv-resp': item.responsable || 'ambos'}),
+  bancos: item => ({'ba-nombre': item.nombre, 'ba-saldo': item.saldo}),
+  caja: item => ({'ca-desc': item.desc, 'ca-monto': item.monto}),
+  abonos: item => ({'ab-monto': item.monto, 'ab-fecha': item.fecha}),
+};
+
 let state = {
   mes: '2026-06',
   ingresos: {},
@@ -703,7 +778,37 @@ function openModal(type) {
     document.getElementById('pr-ahorro').value = state.presupuesto.ahorro;
   }
 }
-function closeModal(type) { document.getElementById('modal-'+type).classList.remove('open'); }
+function closeModal(type) {
+  document.getElementById('modal-'+type).classList.remove('open');
+  const titleEl = document.querySelector('#modal-'+type+' .modal-title');
+  if (titleEl && MODAL_TITLES[type]) titleEl.textContent = MODAL_TITLES[type];
+  editState = { type: null, id: null };
+}
+
+function editItem(type, id) {
+  const arr = getArr(type);
+  const item = arr.find(i => i.id === id);
+  if (!item) return;
+  editState = { type, id };
+  const modalType = MODAL_MAP[type];
+  openModal(modalType);
+  const fields = FIELD_MAP[type](item);
+  Object.entries(fields).forEach(([fid, val]) => {
+    const el = document.getElementById(fid);
+    if (el) el.value = val;
+  });
+  const titleEl = document.querySelector('#modal-'+modalType+' .modal-title');
+  if (titleEl) titleEl.textContent = MODAL_EDIT_TITLES[modalType] || titleEl.textContent;
+}
+
+function upsertItem(type, id, data) {
+  if (id) {
+    const arr = getArr(type);
+    const idx = arr.findIndex(i => i.id === id);
+    if (idx > -1) { arr[idx] = Object.assign({}, arr[idx], data); return; }
+  }
+  getArr(type).push(Object.assign({id: Date.now()}, data));
+}
 document.querySelectorAll('.modal-overlay').forEach(m => m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); }));
 
 function clearInputs(...ids) { ids.forEach(id => { const el = document.getElementById(id); if(el) el.value = ''; }); }
@@ -712,7 +817,8 @@ function saveIngreso() {
   const cliente = document.getElementById('in-cliente').value.trim();
   const monto = parseFloat(document.getElementById('in-monto').value) || 0;
   if (!cliente || !monto) return;
-  getArr('ingresos').push({id:Date.now(), cliente, plan: document.getElementById('in-plan').value, monto, estado: document.getElementById('in-estado').value, fecha: document.getElementById('in-fecha').value});
+  const data = { cliente, plan: document.getElementById('in-plan').value, monto, estado: document.getElementById('in-estado').value, fecha: document.getElementById('in-fecha').value };
+  upsertItem('ingresos', editState.type==='ingresos' ? editState.id : null, data);
   save(); closeModal('ingreso'); clearInputs('in-cliente','in-monto'); renderAll();
 }
 
@@ -720,7 +826,8 @@ function saveGasto() {
   const concepto = document.getElementById('gf-concepto').value.trim();
   const monto = parseFloat(document.getElementById('gf-monto').value) || 0;
   if (!concepto || !monto) return;
-  getArr('gastos').push({id:Date.now(), concepto, cat: document.getElementById('gf-cat').value, monto, rec: document.getElementById('gf-rec').value});
+  const data = { concepto, cat: document.getElementById('gf-cat').value, monto, rec: document.getElementById('gf-rec').value };
+  upsertItem('gastos', editState.type==='gastos' ? editState.id : null, data);
   save(); closeModal('gasto'); clearInputs('gf-concepto','gf-monto'); renderAll();
 }
 
@@ -728,7 +835,8 @@ function saveEquipo() {
   const nombre = document.getElementById('eq-nombre').value.trim();
   const monto = parseFloat(document.getElementById('eq-monto').value) || 0;
   if (!nombre || !monto) return;
-  getArr('equipo').push({id:Date.now(), nombre, rol: document.getElementById('eq-rol').value, monto, estado: document.getElementById('eq-estado').value});
+  const data = { nombre, rol: document.getElementById('eq-rol').value, monto, estado: document.getElementById('eq-estado').value };
+  upsertItem('equipo', editState.type==='equipo' ? editState.id : null, data);
   save(); closeModal('equipo'); clearInputs('eq-nombre','eq-monto'); renderAll();
 }
 
@@ -739,13 +847,23 @@ function saveDiario() {
   const origen = document.getElementById('gd-origen').value;
   const fecha = document.getElementById('gd-fecha').value;
 
+  const editingId = editState.type === 'diarios' ? editState.id : null;
+  if (editingId) {
+    // revertir el efecto del registro anterior sobre caja/banco antes de aplicar el nuevo
+    const prev = getArr('diarios').find(i => i.id === editingId);
+    if (prev) {
+      if (prev.origen === 'Caja fuerte' && state.caja.length > 0) state.caja[0].monto += prev.monto;
+      else if (prev.origen === 'Cuenta bancaria' && state.bancos.length > 0) state.bancos[0].saldo += prev.monto;
+    }
+  }
+
   if (origen === 'Caja fuerte' && state.caja.length > 0) {
     state.caja[0].monto = Math.max(0, state.caja[0].monto - monto);
   } else if (origen === 'Cuenta bancaria' && state.bancos.length > 0) {
     state.bancos[0].saldo = Math.max(0, state.bancos[0].saldo - monto);
   }
 
-  getArr('diarios').push({id:Date.now(), desc, cat: document.getElementById('gd-cat').value, monto, origen, fecha});
+  upsertItem('diarios', editingId, { desc, cat: document.getElementById('gd-cat').value, monto, origen, fecha });
   save(); closeModal('diario'); clearInputs('gd-desc','gd-monto'); renderAll();
 }
 
@@ -753,7 +871,8 @@ function saveSocio() {
   const nombre = document.getElementById('so-nombre').value.trim();
   const monto = parseFloat(document.getElementById('so-monto').value) || 0;
   if (!nombre || !monto) return;
-  getArr('socios').push({id:Date.now(), nombre, monto, estado: document.getElementById('so-estado').value});
+  const data = { nombre, monto, estado: document.getElementById('so-estado').value };
+  upsertItem('socios', editState.type==='socios' ? editState.id : null, data);
   save(); closeModal('socio'); clearInputs('so-nombre','so-monto'); renderAll();
 }
 
@@ -762,7 +881,7 @@ function saveAbono() {
   const fecha = document.getElementById('ab-fecha').value;
   if (!monto) return;
   if (!state.deuda.abonos) state.deuda.abonos = [];
-  state.deuda.abonos.push({id:Date.now(), monto, fecha});
+  upsertItem('abonos', editState.type==='abonos' ? editState.id : null, { monto, fecha });
   save(); closeModal('abono'); clearInputs('ab-monto'); renderAll();
 }
 
@@ -787,7 +906,8 @@ function savePersonalFijo() {
   const concepto = document.getElementById('pf-concepto').value.trim();
   const monto = parseFloat(document.getElementById('pf-monto').value) || 0;
   if (!concepto || !monto) return;
-  getArr('personalFijos').push({id:Date.now(), concepto, cat: document.getElementById('pf-cat').value, monto});
+  const data = { concepto, cat: document.getElementById('pf-cat').value, monto, responsable: document.getElementById('pf-resp').value };
+  upsertItem('personalFijos', editState.type==='personalFijos' ? editState.id : null, data);
   save(); closeModal('personalfijo'); clearInputs('pf-concepto','pf-monto'); renderAll();
 }
 
@@ -795,7 +915,8 @@ function savePersonalVar() {
   const desc = document.getElementById('pv-desc').value.trim();
   const monto = parseFloat(document.getElementById('pv-monto').value) || 0;
   if (!desc || !monto) return;
-  getArr('personalVariables').push({id:Date.now(), desc, cat: document.getElementById('pv-cat').value, monto, fecha: document.getElementById('pv-fecha').value});
+  const data = { desc, cat: document.getElementById('pv-cat').value, monto, fecha: document.getElementById('pv-fecha').value, responsable: document.getElementById('pv-resp').value };
+  upsertItem('personalVariables', editState.type==='personalVariables' ? editState.id : null, data);
   save(); closeModal('personalvar'); clearInputs('pv-desc','pv-monto'); renderAll();
 }
 
@@ -803,7 +924,7 @@ function saveBanco() {
   const nombre = document.getElementById('ba-nombre').value.trim();
   const saldo = parseFloat(document.getElementById('ba-saldo').value) || 0;
   if (!nombre) return;
-  state.bancos.push({id:Date.now(), nombre, saldo});
+  upsertItem('bancos', editState.type==='bancos' ? editState.id : null, { nombre, saldo });
   save(); closeModal('banco'); clearInputs('ba-nombre','ba-saldo'); renderAll();
 }
 
@@ -811,7 +932,7 @@ function saveCaja() {
   const desc = document.getElementById('ca-desc').value.trim();
   const monto = parseFloat(document.getElementById('ca-monto').value) || 0;
   if (!desc) return;
-  state.caja.push({id:Date.now(), desc, monto});
+  upsertItem('caja', editState.type==='caja' ? editState.id : null, { desc, monto });
   save(); closeModal('caja'); clearInputs('ca-desc','ca-monto'); renderAll();
 }
 
@@ -850,7 +971,7 @@ function renderIngresos() {
     <td class="amt green">${fmt(i.monto)}</td>
     <td><span class="pill ${i.estado==='pagado'?'green':i.estado==='pendiente'?'red':'yellow'}">${i.estado}</span></td>
     <td style="color:var(--muted)">${i.fecha||'—'}</td>
-    <td><button class="btn-del" onclick="deleteItem('ingresos',${i.id})">✕</button></td>
+    <td><button class="btn-edit" onclick="editItem('ingresos',${i.id})">✎</button><button class="btn-del" onclick="deleteItem('ingresos',${i.id})">✕</button></td>
   </tr>`).join('');
 }
 
@@ -863,7 +984,7 @@ function renderGastos() {
     <td><span class="pill muted">${g.cat}</span></td>
     <td class="amt red">${fmt(g.monto)}</td>
     <td style="color:var(--muted)">${g.rec}</td>
-    <td><button class="btn-del" onclick="deleteItem('gastos',${g.id})">✕</button></td>
+    <td><button class="btn-edit" onclick="editItem('gastos',${g.id})">✎</button><button class="btn-del" onclick="deleteItem('gastos',${g.id})">✕</button></td>
   </tr>`).join('');
 }
 
@@ -876,7 +997,7 @@ function renderEquipo() {
     <td><span class="pill purple">${e.rol}</span></td>
     <td class="amt red">${fmt(e.monto)}</td>
     <td><span class="pill ${e.estado==='pagado'?'green':'red'}">${e.estado}</span></td>
-    <td><button class="btn-del" onclick="deleteItem('equipo',${e.id})">✕</button></td>
+    <td><button class="btn-edit" onclick="editItem('equipo',${e.id})">✎</button><button class="btn-del" onclick="deleteItem('equipo',${e.id})">✕</button></td>
   </tr>`).join('');
 }
 
@@ -888,7 +1009,7 @@ function renderSocios() {
     <td><strong>${s.nombre}</strong></td>
     <td class="amt red">${fmt(s.monto)}</td>
     <td><span class="pill ${s.estado==='pagado'?'green':'red'}">${s.estado}</span></td>
-    <td><button class="btn-del" onclick="deleteItem('socios',${s.id})">✕</button></td>
+    <td><button class="btn-edit" onclick="editItem('socios',${s.id})">✎</button><button class="btn-del" onclick="deleteItem('socios',${s.id})">✕</button></td>
   </tr>`).join('');
 }
 
@@ -922,7 +1043,7 @@ function renderDeuda() {
   tb.innerHTML = abonos.slice().sort((a,b)=>(a.fecha||'').localeCompare(b.fecha||'')).map(a => `<tr>
     <td class="amt green">${fmt(a.monto)}</td>
     <td style="color:var(--muted)">${a.fecha||'—'}</td>
-    <td><button class="btn-del" onclick="deleteItem('abonos',${a.id})">✕</button></td>
+    <td><button class="btn-edit" onclick="editItem('abonos',${a.id})">✎</button><button class="btn-del" onclick="deleteItem('abonos',${a.id})">✕</button></td>
   </tr>`).join('');
 }
 
@@ -936,7 +1057,7 @@ function renderDiarios() {
     <td class="amt red">${fmt(d.monto)}</td>
     <td><span class="pill ${d.origen==='Caja fuerte'?'yellow':'blue'}">${d.origen==='Caja fuerte'?'🔒 Caja':'🏦 Banco'}</span></td>
     <td style="color:var(--muted)">${d.fecha||'—'}</td>
-    <td><button class="btn-del" onclick="deleteItem('diarios',${d.id})">✕</button></td>
+    <td><button class="btn-edit" onclick="editItem('diarios',${d.id})">✎</button><button class="btn-del" onclick="deleteItem('diarios',${d.id})">✕</button></td>
   </tr>`).join('');
 }
 
@@ -948,43 +1069,75 @@ function renderDinero() {
   document.getElementById('total-bancos').textContent = fmt(totalB);
   document.getElementById('total-caja').textContent = fmt(totalC);
   const lb = document.getElementById('lista-bancos');
-  lb.innerHTML = bancos.length ? bancos.map(b=>`<div class="dinero-item"><span class="dinero-name">${b.nombre}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(b.saldo)}</span><button class="btn-del" onclick="deleteItem('bancos',${b.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin cuentas registradas</div>';
+  lb.innerHTML = bancos.length ? bancos.map(b=>`<div class="dinero-item"><span class="dinero-name">${b.nombre}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(b.saldo)}</span><button class="btn-edit" onclick="editItem('bancos',${b.id})">✎</button><button class="btn-del" onclick="deleteItem('bancos',${b.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin cuentas registradas</div>';
   const lc = document.getElementById('lista-caja');
-  lc.innerHTML = caja.length ? caja.map(c=>`<div class="dinero-item"><span class="dinero-name">${c.desc}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(c.monto)}</span><button class="btn-del" onclick="deleteItem('caja',${c.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin registros</div>';
+  lc.innerHTML = caja.length ? caja.map(c=>`<div class="dinero-item"><span class="dinero-name">${c.desc}</span><div style="display:flex;align-items:center;gap:8px"><span class="dinero-amount">${fmt(c.monto)}</span><button class="btn-edit" onclick="editItem('caja',${c.id})">✎</button><button class="btn-del" onclick="deleteItem('caja',${c.id})">✕</button></div></div>`).join('') : '<div class="dinero-empty">Sin registros</div>';
 }
 
+function setFiltroPersonal(f, el) {
+  personalFilter = f;
+  document.querySelectorAll('#filtro-personal .nav-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  renderPersonal();
+}
+
+// Registros guardados antes de este cambio no tienen "responsable" — se tratan como "ambos" (fijo/gasto compartido) para no perder ni reclasificar nada.
+const respDe = x => x.responsable || 'ambos';
+const pillResponsable = r => {
+  const map = { jeip: ['blue', '👤 Jeip'], mariana: ['purple', '👤 Mariana'], ambos: ['orange', '👥 Ambos'] };
+  const [cls, label] = map[r] || map.ambos;
+  return `<span class="pill ${cls}">${label}</span>`;
+};
+
 function renderPersonal() {
-  const fijos = getArr('personalFijos');
-  const vars = getArr('personalVariables');
+  const fijosAll = getArr('personalFijos');
+  const varsAll = getArr('personalVariables');
+  const aplicaFiltro = arr => personalFilter === 'todos' ? arr : arr.filter(x => respDe(x) === personalFilter);
+  const fijos = aplicaFiltro(fijosAll);
+  const vars = aplicaFiltro(varsAll);
 
   const tbF = document.getElementById('tbl-personalfijo');
   tbF.innerHTML = fijos.length ? fijos.map(f => `<tr>
     <td><strong>${f.concepto}</strong></td>
     <td><span class="pill muted">${f.cat}</span></td>
+    <td>${pillResponsable(respDe(f))}</td>
     <td class="amt red">${fmt(f.monto)}</td>
-    <td><button class="btn-del" onclick="deleteItem('personalFijos',${f.id})">✕</button></td>
-  </tr>`).join('') : '<tr><td colspan="4" class="empty">Sin gastos registrados</td></tr>';
+    <td><button class="btn-edit" onclick="editItem('personalFijos',${f.id})">✎</button><button class="btn-del" onclick="deleteItem('personalFijos',${f.id})">✕</button></td>
+  </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin gastos registrados</td></tr>';
 
   const tbV = document.getElementById('tbl-personalvar');
   tbV.innerHTML = vars.length ? vars.map(v => `<tr>
     <td><strong>${v.desc}</strong></td>
     <td><span class="pill muted">${v.cat}</span></td>
+    <td>${pillResponsable(respDe(v))}</td>
     <td class="amt red">${fmt(v.monto)}</td>
     <td style="color:var(--muted)">${v.fecha||'—'}</td>
-    <td><button class="btn-del" onclick="deleteItem('personalVariables',${v.id})">✕</button></td>
-  </tr>`).join('') : '<tr><td colspan="5" class="empty">Sin gastos registrados</td></tr>';
+    <td><button class="btn-edit" onclick="editItem('personalVariables',${v.id})">✎</button><button class="btn-del" onclick="deleteItem('personalVariables',${v.id})">✕</button></td>
+  </tr>`).join('') : '<tr><td colspan="6" class="empty">Sin gastos registrados</td></tr>';
 
-  const totalF = fijos.reduce((s,f)=>s+f.monto,0);
-  const totalV = vars.reduce((s,v)=>s+v.monto,0);
+  // KPIs generales: siempre sobre el total del mes, sin importar el filtro activo
+  const totalF = fijosAll.reduce((s,f)=>s+f.monto,0);
+  const totalV = varsAll.reduce((s,v)=>s+v.monto,0);
   const sueldos = getArr('socios').reduce((s,x)=>s+x.monto,0);
   const disponible = sueldos - totalF - totalV;
   document.getElementById('k-psue').textContent = fmtShort(sueldos);
   document.getElementById('k-pf').textContent = fmtShort(totalF);
-  document.getElementById('k-pf-sub').textContent = fijos.length + ' conceptos';
+  document.getElementById('k-pf-sub').textContent = fijosAll.length + ' conceptos';
   document.getElementById('k-pv').textContent = fmtShort(totalV);
-  document.getElementById('k-pv-sub').textContent = vars.length + ' registros';
+  document.getElementById('k-pv-sub').textContent = varsAll.length + ' registros';
   document.getElementById('k-ptotal').textContent = fmtShort(disponible);
   document.getElementById('k-ptotal').className = 'kpi-val ' + (disponible >= 0 ? 'yellow' : 'red');
+
+  // Desglose por persona (fijos + variables combinados del mes)
+  const todos = [...fijosAll, ...varsAll];
+  const porPersona = r => todos.filter(x => respDe(x) === r);
+  const sumaPersona = r => porPersona(r).reduce((s,x)=>s+x.monto,0);
+  document.getElementById('k-pj').textContent = fmtShort(sumaPersona('jeip'));
+  document.getElementById('k-pj-sub').textContent = porPersona('jeip').length + ' registros';
+  document.getElementById('k-pm').textContent = fmtShort(sumaPersona('mariana'));
+  document.getElementById('k-pm-sub').textContent = porPersona('mariana').length + ' registros';
+  document.getElementById('k-pa').textContent = fmtShort(sumaPersona('ambos'));
+  document.getElementById('k-pa-sub').textContent = porPersona('ambos').length + ' registros';
 }
 
 function renderPresupuesto(real) {
@@ -1080,6 +1233,49 @@ function recalcular() {
     <td class="amt green">${fmt(i.monto)}</td>
     <td><span class="pill ${i.estado==='pagado'?'green':i.estado==='pendiente'?'red':'yellow'}">${i.estado}</span></td>
   </tr>`).join('');
+}
+
+function exportData() {
+  const dataStr = JSON.stringify(state, null, 2);
+  const blob = new Blob([dataStr], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  const fecha = new Date().toISOString().slice(0,10);
+  a.href = url;
+  a.download = `dimo-finanzas-backup-${fecha}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported || typeof imported !== 'object' || !imported.mes) throw new Error('Archivo inválido');
+      const ok = confirm('Esto reemplazará los datos actuales (todos los meses) con los del archivo importado. ¿Continuar?');
+      if (!ok) { event.target.value = ''; return; }
+      state = Object.assign({}, state, imported);
+      if (!state.socios) state.socios = {};
+      if (!state.personalFijos) state.personalFijos = {};
+      if (!state.personalVariables) state.personalVariables = {};
+      if (!state.deuda) state.deuda = { total: 10000000, metaFecha: '2026-12', abonos: [] };
+      if (!state.deuda.abonos) state.deuda.abonos = [];
+      if (!state.presupuesto) state.presupuesto = { ingresos: 18800000, gastos: 1700000, equipo: 4450000, socios: 6000000, ahorro: 2000000 };
+      save();
+      document.getElementById('monthSel').value = state.mes;
+      renderAll();
+      alert('Datos importados correctamente.');
+    } catch (err) {
+      alert('No se pudo leer el archivo. Asegúrate de que sea un backup válido de Dimo Finanzas (.json exportado desde aquí).');
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 // Set current month in selector
